@@ -11,6 +11,8 @@ the first stable release.
 
 ### Added
 
+- Confluence Cloud and Notion documentation publisher adapters.
+- Publisher plugin discovery through the `doc_harvester.publishers` entry-point group.
 - Storage provider contract with local, S3-compatible, and Yandex Disk adapters.
 - Publisher contract with local Markdown and Yandex Wiki adapters.
 - Dependency-free profile validation plus a public JSON Schema.

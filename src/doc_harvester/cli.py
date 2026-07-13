@@ -149,7 +149,8 @@ def _run_profile_validate(args: argparse.Namespace) -> int:
 def _run_publish(args: argparse.Namespace) -> int:
     from doc_harvester.publishers import PublishRequest, create_publisher
 
-    publisher = create_publisher(args.publisher, root=args.local_root)
+    overrides = {"root": args.local_root} if args.local_root else {}
+    publisher = create_publisher(args.publisher, **overrides)
     result = publisher.publish(
         PublishRequest(Path(args.source), args.destination, args.title),
         dry_run=not args.apply,
@@ -227,8 +228,8 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("destination")
     publish.add_argument(
         "--publisher",
-        choices=("local", "yandex-wiki"),
         default=os.environ.get("DOC_HARVESTER_PUBLISHER", "local"),
+        help="Publisher name (built-in or installed plugin)",
     )
     publish.add_argument("--title", default="")
     publish.add_argument("--local-root", help="Override local publisher root")

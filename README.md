@@ -19,7 +19,8 @@ scraper for every website or document type.
 - Add retrieval metadata such as document, page, section, vendor, standard, year,
   language, source type, and quality status.
 - Store output locally, on Yandex Disk, or in S3-compatible object storage.
-- Publish generated documentation locally or to Yandex Wiki through provider adapters.
+- Publish generated documentation locally, to Yandex Wiki, Confluence Cloud, Notion, or
+  installed third-party services through provider adapters.
 - Run a FastAPI service and an optional, independently deployable DocProc service.
 
 ## Quick Start
@@ -115,10 +116,10 @@ discovery -> crawler/fetcher -> extractor -> unit JSON
 - `config/profiles/`: domain discovery profiles.
 - `scripts/`: advanced operational and Wiki automation commands.
 
-Yandex Disk and Yandex Wiki are optional adapters, not requirements for extraction and
-chunking. Public storage and publisher contracts are available under
+Yandex Disk and documentation services are optional adapters, not requirements for
+extraction and chunking. Public storage and publisher contracts are available under
 `doc_harvester.storage` and `doc_harvester.publishers`. S3 support is installed with
-`pip install -e '.[s3]'`; Wiki automation uses `pip install -e '.[wiki]'`.
+`pip install -e '.[s3]'`; documentation automation uses `pip install -e '.[wiki]'`.
 
 ## Development
 

@@ -1,49 +1,94 @@
-# Wiki Automation
+# Documentation Automation
 
-Wiki publishing is optional and isolated from crawling. Documentation can be generated and
-reviewed locally before any API call is made.
+Documentation publishing is optional and isolated from crawling. Markdown can be generated,
+reviewed, and previewed locally before an external API call changes content.
+
+The same batch workflow supports local output, Yandex Wiki, Confluence Cloud, Notion, and
+installed third-party publishers.
 
 ## Configuration
 
 1. Copy `config/wiki_publish_map.example.json` to `config/wiki_publish_map.json`.
-2. Map each local Markdown source to a page URL or slug in your own Wiki organization.
-3. Set `YANDEX_WIKI_TOKEN` and `YANDEX_WIKI_CLOUD_ORG_ID` in `.env` or your secret manager.
+2. Set the map's top-level `publisher` or pass `--publisher`.
+3. Map every Markdown `source` to a provider-specific `destination`.
+4. Store only the selected provider's credentials in `.env` or a secret manager.
 
-The local map is ignored by Git because it can reveal private organization structure.
+The local map is ignored by Git because destinations can reveal private organization
+structure. The historical `slug` field remains accepted for Yandex maps, but new maps
+should use `destination`.
+
+```json
+{
+  "publisher": "notion",
+  "pages": [
+    {
+      "source": "wiki/out/01-roadmap.md",
+      "destination": "page:01234567-89ab-cdef-0123-456789abcdef",
+      "title": "Roadmap"
+    }
+  ]
+}
+```
 
 ## Dry run
 
 ```bash
-python scripts/publish_wiki.py --map config/wiki_publish_map.json
+python scripts/publish_docs.py --map config/wiki_publish_map.json
 ```
 
-Review generated output and the proposed page list before applying changes.
+Dry-run mode performs target lookup where applicable and reports `would_update`,
+`would_create`, or `missing`. It does not write page content.
 
-## Publish
+## Apply
 
 ```bash
-python scripts/publish_wiki.py --apply --map config/wiki_publish_map.json
+python scripts/publish_docs.py --apply --map config/wiki_publish_map.json
 ```
 
-Apply runs copy the local generated Markdown into a timestamped snapshot directory. This is
-not a backup of remote page history; use the Wiki platform's revision history for rollback.
-Keep runtime snapshots under `runs/`; they are ignored by Git and may contain private data.
+Add `--create-missing` only when the map intentionally contains creation targets. Apply
+runs copy generated Markdown into a timestamped local snapshot and retain content hashes to
+skip unchanged pages. Snapshots are not backups of remote revision history.
 
-## Provider adapter
+`scripts/publish_wiki.py` remains as a compatibility wrapper around `publish_docs.py`.
 
-The batch automation targets Yandex Wiki through the public `YandexWikiPublisher` adapter.
-The generic CLI can publish an individual Markdown file through either `local` or
-`yandex-wiki` without changing its content.
+## Single-page examples
 
-Install Wiki automation dependencies with:
+```bash
+# Yandex Wiki slug
+doc-harvester publish wiki/out/page.md docs/page --publisher yandex-wiki
+
+# Confluence page title lookup/update
+doc-harvester publish wiki/out/page.md 'title:Roadmap' --publisher confluence --apply
+
+# Confluence child creation
+doc-harvester publish wiki/out/page.md 'parent:123456/Roadmap' \
+  --publisher confluence --apply --create-missing
+
+# Notion existing page replacement
+doc-harvester publish wiki/out/page.md 'page:01234567-89ab-cdef-0123-456789abcdef' \
+  --publisher notion --apply
+
+# Notion child creation
+doc-harvester publish wiki/out/page.md 'parent:01234567-89ab-cdef-0123-456789abcdef' \
+  --publisher notion --title Roadmap --apply --create-missing
+```
+
+## Access control
+
+Automation updates content only. It does not modify access lists, sharing links, groups,
+guests, or public visibility. Before apply mode:
+
+- grant the API connection only the pages or spaces it needs;
+- ensure a creation parent has the intended private permissions;
+- use least-privilege service credentials;
+- rely on the documentation service's revision history for rollback.
+
+## Dependencies
+
+The batch script loads `.env` through the `wiki` extra. Confluence additionally needs its
+Markdown converter:
 
 ```bash
 python -m pip install -e '.[wiki]'
-```
-
-Preview and apply a single page:
-
-```bash
-doc-harvester publish wiki/out/page.md docs/page --publisher yandex-wiki
-doc-harvester publish wiki/out/page.md docs/page --publisher yandex-wiki --apply --create-missing
+python -m pip install -e '.[wiki,confluence]'
 ```
