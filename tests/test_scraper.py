@@ -1,3 +1,5 @@
+import scraper
+from doc_harvester.profiles import DiscoveryProfile
 from scraper import (
     _is_file_link,
     _is_product_url,
@@ -62,3 +64,26 @@ def test_electrical_score():
     text_irrelevant = "Fashion trends summer collection youtube video"
     score_bad = electrical_score(text_irrelevant)
     assert score_bad < score
+
+
+def test_configure_profile_applies_domain_terms_and_crawl_settings(monkeypatch):
+    monkeypatch.setattr(scraper, "DOMAIN", "electrical")
+    monkeypatch.setattr(scraper, "ELECTRICAL_TERMS", ("electr",))
+    monkeypatch.setattr(scraper, "CRAWL_MAX_PAGES_PER_SOURCE", 120)
+    monkeypatch.setattr(scraper, "WEB_MIN_PRODUCT_SCORE", 2)
+    profile = DiscoveryProfile.from_dict(
+        "mechanical",
+        {
+            "queries": ["pump catalogue"],
+            "priority_terms": ["pump", "valve"],
+            "metadata": {"domain": "mechanical-equipment"},
+            "crawl": {"max_pages": 25, "web_min_product_score": 1},
+        },
+    )
+
+    scraper.configure_profile(profile)
+
+    assert scraper.DOMAIN == "mechanical-equipment"
+    assert scraper.ELECTRICAL_TERMS == ("pump", "valve")
+    assert scraper.CRAWL_MAX_PAGES_PER_SOURCE == 25
+    assert scraper.WEB_MIN_PRODUCT_SCORE == 1

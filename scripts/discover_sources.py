@@ -17,7 +17,6 @@ import argparse
 import json
 import os
 import re
-import sys
 import time
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -31,25 +30,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.join(SCRIPT_DIR, "..")
 PROFILES_DIR = os.path.join(PROJECT_ROOT, "config", "profiles")
 DISCOVERY_DIR = os.path.join(PROJECT_ROOT, "discovery")
-
-# Built-in fallback (used only if config/profiles/electrical.json is missing)
-_BUILTIN_ELECTRICAL = {
-    "queries": [
-        "site:.ru электротехническое оборудование каталог pdf",
-        "site:.ru кабельная продукция каталог pdf",
-        "site:.ru электрощит оборудование каталог docx",
-        "site:.ru низковольтное оборудование каталог xlsx",
-        "site:.ru производитель электротехнической продукции каталог",
-    ],
-    "priority_terms": [
-        "электр", "кабель", "низковольт", "щит", "автомат",
-        "распредел", "iek", "ekf", "abb", "schneider", "legrand",
-    ],
-    "priority_domains": [
-        "electro", "cable", "iek", "ekf", "abb",
-        "se.com", "legrand", "elektromir", "ruscable",
-    ],
-}
 
 BASE_RELEVANCE_TERMS = (
     "каталог", "специф", "паспорт", "техническ", "норм",
@@ -87,33 +67,17 @@ _PAGINATION_PATTERN = re.compile(
 
 
 def _load_profile(name: str) -> Dict:
-    """Load profile from config/profiles/{name}.json, fallback to built-in."""
-    path = os.path.join(PROFILES_DIR, f"{name}.json")
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            profile = json.load(f)
-        # Validate required keys
-        for key in ("queries", "priority_terms", "priority_domains"):
-            if key not in profile:
-                print(f"WARNING: profile {path} missing '{key}', using built-in default")
-                return _BUILTIN_ELECTRICAL
-        return profile
-    if name == "electrical":
-        return _BUILTIN_ELECTRICAL
-    print(f"ERROR: profile '{name}' not found at {path}")
-    sys.exit(1)
+    """Load and validate ``config/profiles/{name}.json``."""
+    from doc_harvester.profiles import load_profile
+
+    return load_profile(name, profiles_dir=PROFILES_DIR).to_dict()
 
 
 def _list_profiles() -> List[str]:
-    """List available profile names from config/profiles/."""
-    names = []
-    if os.path.isdir(PROFILES_DIR):
-        for fname in sorted(os.listdir(PROFILES_DIR)):
-            if fname.endswith(".json"):
-                names.append(fname[:-5])
-    if not names:
-        names.append("electrical")
-    return names
+    """List available validated profile filenames."""
+    from doc_harvester.profiles import list_profiles
+
+    return list_profiles(PROFILES_DIR)
 
 
 def _normalize_url(url: str) -> str:

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/getanotherone/doc-harvester/blob/main/config/profile.schema.json",
+  "title": "Doc Harvester discovery profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["queries"],
+  "properties": {
+    "schema_version": {"const": 1, "default": 1},
+    "queries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "priority_terms": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "default": []
+    },
+    "priority_domains": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "default": []
+    },
+    "crawl": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": {},
+      "properties": {
+        "max_pages": {"type": "integer", "minimum": 1},
+        "file_score_threshold": {"type": "integer"},
+        "follow_child_score_threshold": {"type": "integer"},
+        "web_min_product_score": {"type": "integer"},
+        "relevance_filter": {"type": "boolean"}
+      }
+    },
+    "metadata": {"type": "object", "default": {}}
+  }
+}

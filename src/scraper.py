@@ -24,6 +24,33 @@ def _yandex():
     import yandex
     return yandex
 
+
+def _storage():
+    """Create the configured storage adapter at the upload boundary."""
+    from doc_harvester.storage import create_storage
+
+    return create_storage(STORAGE_PROVIDER)
+
+
+def configure_profile(profile: Any) -> None:
+    """Apply a validated discovery profile to legacy crawler globals."""
+    global DOMAIN, ELECTRICAL_TERMS, ELECTRICAL_ONLY
+    global CRAWL_MAX_PAGES_PER_SOURCE, ELECTRICAL_SCORE_THRESHOLD
+    global FOLLOW_CHILD_SCORE_THRESHOLD, WEB_MIN_PRODUCT_SCORE
+
+    DOMAIN = str(profile.metadata.get("domain") or profile.name)
+    ELECTRICAL_TERMS = tuple(profile.priority_terms)
+    settings = profile.crawl
+    ELECTRICAL_ONLY = settings.get("relevance_filter", bool(ELECTRICAL_TERMS))
+    CRAWL_MAX_PAGES_PER_SOURCE = settings.get("max_pages", CRAWL_MAX_PAGES_PER_SOURCE)
+    ELECTRICAL_SCORE_THRESHOLD = settings.get(
+        "file_score_threshold", ELECTRICAL_SCORE_THRESHOLD
+    )
+    FOLLOW_CHILD_SCORE_THRESHOLD = settings.get(
+        "follow_child_score_threshold", FOLLOW_CHILD_SCORE_THRESHOLD
+    )
+    WEB_MIN_PRODUCT_SCORE = settings.get("web_min_product_score", WEB_MIN_PRODUCT_SCORE)
+
 REQUEST_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -66,6 +93,7 @@ SEARCH_DISCOVERY_ENABLED = os.environ.get("SEARCH_DISCOVERY_ENABLED", "1").lower
 )
 SEARCH_MAX_QUERIES_PER_SOURCE = int(os.environ.get("SEARCH_MAX_QUERIES_PER_SOURCE", "50"))
 UPLOAD_ENABLED = os.environ.get("UPLOAD_ENABLED", "1").lower() not in ("0", "false", "no")
+STORAGE_PROVIDER = os.environ.get("DOC_HARVESTER_STORAGE", "local").strip().lower()
 BFS_ENABLED = os.environ.get("BFS_ENABLED", "1").lower() not in ("0", "false", "no")
 
 # URL path segments that indicate non-product pages (commercial/operational)
@@ -502,12 +530,7 @@ def load_approved_sources(path: str = APPROVED_SOURCES_FILE) -> List[str]:
 
 
 def ingest_page(page_url: str, disk_folder: str) -> Dict[str, Any]:
-    if UPLOAD_ENABLED:
-        yd = _yandex()
-        yd.ensure_folder("/datasets")
-        yd.ensure_folder("/datasets/specs")
-        yd.ensure_folder(os.path.dirname(disk_folder))
-        yd.ensure_folder(disk_folder)
+    storage = _storage() if UPLOAD_ENABLED else None
 
     processed = set(load_json(STATE_FILE, []))
     hash_index = load_json(HASH_INDEX_FILE, {})
@@ -549,7 +572,7 @@ def ingest_page(page_url: str, disk_folder: str) -> Dict[str, Any]:
             print(f"SKIP (processed): {link}")
             continue
 
-        if UPLOAD_ENABLED and _yandex().path_exists(disk_path):
+        if storage and storage.exists(disk_path):
             doc_result["status"] = "skipped_exists_on_disk"
             doc_result["finished_at"] = datetime.utcnow().isoformat()
             print(f"SKIP (exists on disk): {filename}")
@@ -584,9 +607,8 @@ def ingest_page(page_url: str, disk_folder: str) -> Dict[str, Any]:
             os.replace(local_path, stored_path)
             local_path = stored_path
 
-            if UPLOAD_ENABLED:
-                yd = _yandex()
-                retry(lambda: yd.upload_file(local_path, disk_path))
+            if storage:
+                retry(lambda: storage.put_file(local_path, disk_path))
                 time.sleep(1)
 
             hash_index[file_hash] = disk_path
@@ -978,12 +1000,7 @@ def ingest_web(root_url: str, disk_folder: str, resume_urls=None, batch_size=0,
     """
     from hashlib import sha256
 
-    if UPLOAD_ENABLED:
-        yd = _yandex()
-        yd.ensure_folder("/datasets")
-        yd.ensure_folder("/datasets/specs")
-        yd.ensure_folder(os.path.dirname(disk_folder))
-        yd.ensure_folder(disk_folder)
+    storage = _storage() if UPLOAD_ENABLED else None
 
     processed = set(load_json(STATE_FILE, []))
     hash_index = load_json(HASH_INDEX_FILE, {})
@@ -1200,16 +1217,15 @@ def ingest_web(root_url: str, disk_folder: str, resume_urls=None, batch_size=0,
             target_disk_dir = quarantine_disk_dir if should_quarantine else processed_disk_dir
 
             uploaded_files = 0
-            if UPLOAD_ENABLED:
-                yd = _yandex()
-                yd.ensure_tree(target_disk_dir)
-                uploaded_files = retry(
-                    lambda: yd.upload_directory(
-                        local_dir=output_dir,
-                        disk_dir=target_disk_dir,
+            if storage:
+                upload_result = retry(
+                    lambda: storage.upload_tree(
+                        source=output_dir,
+                        destination=target_disk_dir,
                         overwrite=True,
                     )
                 )
+                uploaded_files = upload_result.files_uploaded
 
             extraction_info = {
                 "mode": "web_html_units_chunks_v2",

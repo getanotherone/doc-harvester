@@ -5,10 +5,15 @@ the first stable release.
 
 ## [Unreleased]
 
+### Added
+
+- Storage provider contract with local, S3-compatible, and Yandex Disk adapters.
+- Publisher contract with local Markdown and Yandex Wiki adapters.
+- Dependency-free profile validation plus a public JSON Schema.
+- CLI provider selection, profile validation, and artifact publishing commands.
+
 ### Planned
 
-- Storage and publisher interfaces with local, S3-compatible, and Yandex adapters.
-- Schema-validated customizable profiles.
 - A smaller, dependency-light core package.
 
 ## [0.1.0] - 2026-07-13

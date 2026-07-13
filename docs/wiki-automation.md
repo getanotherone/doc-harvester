@@ -29,8 +29,21 @@ Apply runs copy the local generated Markdown into a timestamped snapshot directo
 not a backup of remote page history; use the Wiki platform's revision history for rollback.
 Keep runtime snapshots under `runs/`; they are ignored by Git and may contain private data.
 
-## Generalization status
+## Provider adapter
 
-The publisher currently targets Yandex Wiki. A future publisher interface will support
-local Markdown, Git repositories, generic webhooks, and other documentation systems without
-changing the processing pipeline.
+The batch automation targets Yandex Wiki through the public `YandexWikiPublisher` adapter.
+The generic CLI can publish an individual Markdown file through either `local` or
+`yandex-wiki` without changing its content.
+
+Install Wiki automation dependencies with:
+
+```bash
+python -m pip install -e '.[wiki]'
+```
+
+Preview and apply a single page:
+
+```bash
+doc-harvester publish wiki/out/page.md docs/page --publisher yandex-wiki
+doc-harvester publish wiki/out/page.md docs/page --publisher yandex-wiki --apply --create-missing
+```

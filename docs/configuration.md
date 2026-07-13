@@ -14,6 +14,25 @@ make `.env` safe: never commit it, print it, attach it to an issue, or include i
 | `YANDEX_WIKI_CLOUD_ORG_ID` | Wiki publishing | Organization identifier |
 | `SCRAPPER_API_KEY` | HTTP API | Use a randomly generated production value |
 
+## Provider selection
+
+Local storage and publication are safe defaults and require no credentials:
+
+| Variable | Default | Effect |
+|---|---|---|
+| `DOC_HARVESTER_STORAGE` | `local` | `local`, `yandex`, or `s3` |
+| `DOC_HARVESTER_LOCAL_STORAGE_ROOT` | `storage` | Filesystem provider root |
+| `DOC_HARVESTER_PUBLISHER` | `local` | `local` or `yandex-wiki` |
+| `DOC_HARVESTER_PUBLISH_ROOT` | `published` | Local publisher root |
+
+S3-compatible storage uses `S3_BUCKET`, `S3_PREFIX`, `S3_ENDPOINT_URL`, `S3_REGION`,
+`AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`. Install its optional SDK with
+`python -m pip install -e '.[s3]'`. AWS S3 can omit `S3_ENDPOINT_URL`; MinIO and other
+compatible services should set it.
+
+Provider destinations are relative to the provider root, bucket prefix, or remote service
+namespace. Local adapters reject `..` traversal outside their configured root.
+
 ## Crawl controls
 
 | Variable | Default | Effect |
@@ -37,8 +56,21 @@ The current defaults target electrical content:
 | `FOLLOW_CHILD_SCORE_THRESHOLD` | `0` | Minimum score for traversing child pages |
 | `WEB_MIN_PRODUCT_SCORE` | `2` | Product-page URL threshold |
 
-Use `config/profiles/electrical.json` as a profile example. General schema validation and
-provider selection will replace environment-heavy configuration in the next phase.
+Use `config/profiles/electrical.json` as a profile example and
+`config/profile.schema.json` as the machine-readable contract. A profile requires at least
+one search query and may define priority terms, priority domains, crawl overrides, and
+free-form metadata. Unknown top-level fields are rejected to catch misspellings.
+
+The optional `crawl` object accepts `max_pages`, `file_score_threshold`,
+`follow_child_score_threshold`, `web_min_product_score`, and `relevance_filter`. These
+values are applied when `crawl` or `files` runs with that profile.
+
+Validate profiles before discovery:
+
+```bash
+doc-harvester profile validate electrical
+doc-harvester profile validate path/to/custom.json
+```
 
 ## Quality controls
 
