@@ -5,6 +5,10 @@ the first stable release.
 
 ## [Unreleased]
 
+### Changed
+
+- Upgrade `requests` to 2.33.0 and the pytest stack to `pytest` 9.0.3 with `pytest-asyncio` 1.4.0 to address dependency security advisories.
+
 ### Added
 
 - Storage provider contract with local, S3-compatible, and Yandex Disk adapters.
