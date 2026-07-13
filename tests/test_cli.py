@@ -1,7 +1,7 @@
 import json
 
-from spec_scraper.cli import build_parser, main
-from spec_scraper.demo import build_demo_result
+from doc_harvester.cli import build_parser, main
+from doc_harvester.demo import build_demo_result
 
 
 def test_cli_exposes_public_commands():

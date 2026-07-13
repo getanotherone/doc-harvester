@@ -1,6 +1,6 @@
 """Regex patterns and constants for electrical engineering document processing.
 
-Ported from spec_scraper src/chunker.py — battle-tested on 337K chunks.
+Ported from doc_harvester src/chunker.py — battle-tested on 337K chunks.
 """
 
 from __future__ import annotations

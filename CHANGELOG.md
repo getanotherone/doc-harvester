@@ -16,7 +16,7 @@ the first stable release.
 ### Added
 
 - Fresh sanitized open-source source tree.
-- Installable `spec-scraper` package and CLI.
+- Installable `doc-harvester` package and CLI.
 - Offline extraction, chunking, and metadata demo.
 - HTML, PDF, DOCX, XLSX, XML, OCR, and token-aware chunking pipeline components.
 - FastAPI wrapper and optional DocProc service.

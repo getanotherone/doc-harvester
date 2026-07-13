@@ -36,7 +36,7 @@ excluded from Git.
 
 ## Package boundaries
 
-- `spec_scraper.cli` is the stable public command entrypoint.
+- `doc_harvester.cli` is the stable public command entrypoint.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
 - `api/` exposes asynchronous task endpoints around standalone operations.
 - `services/doc_proc/` owns its database, queue, storage, embedding, and parsing concerns.

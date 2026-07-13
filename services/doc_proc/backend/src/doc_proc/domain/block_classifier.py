@@ -1,6 +1,6 @@
 """Block type classification: table, normative, or normal text.
 
-Ported from spec_scraper src/chunker.py — heuristic-based detection
+Ported from doc_harvester src/chunker.py — heuristic-based detection
 of tabular data and normative (numbered) paragraphs.
 """
 

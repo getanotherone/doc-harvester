@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "spec-scraper"
+name = "doc-harvester"
 version = "0.1.0"
 description = "A configurable ingestion pipeline for technical documents and RAG datasets"
 readme = "README.md"
@@ -44,10 +44,10 @@ dev = [
 ]
 
 [project.scripts]
-spec-scraper = "spec_scraper.cli:main"
+doc-harvester = "doc_harvester.cli:main"
 
 [tool.setuptools]
-packages = ["spec_scraper", "api", "api.routers"]
+packages = ["doc_harvester", "api", "api.routers"]
 package-dir = {"" = "src", "api" = "api", "api.routers" = "api/routers"}
 py-modules = [
   "browser",

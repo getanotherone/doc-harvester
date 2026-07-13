@@ -458,7 +458,7 @@ def extract_links(page_url: str) -> List[str]:
 
 
 def download_to_temp_file(url: str, filename: str) -> str:
-    temp_dir = "/tmp/spec_scraper_ingest"
+    temp_dir = "/tmp/doc_harvester_ingest"
     os.makedirs(temp_dir, exist_ok=True)
     local_path = os.path.join(temp_dir, filename)
     retry(lambda: download_pdf_from_yandex(url, local_path))
@@ -619,7 +619,7 @@ def ingest_page(page_url: str, disk_folder: str) -> Dict[str, Any]:
 
         finally:
             # Clean up temp file if it wasn't moved to local store
-            temp_dir = "/tmp/spec_scraper_ingest"
+            temp_dir = "/tmp/doc_harvester_ingest"
             if local_path and os.path.exists(local_path) and local_path.startswith(temp_dir):
                 os.remove(local_path)
 

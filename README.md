@@ -1,6 +1,6 @@
-# spec-scraper
+# doc-harvester
 
-`spec-scraper` is an alpha-stage ingestion pipeline for turning technical documents and
+`doc-harvester` is an alpha-stage ingestion pipeline for turning technical documents and
 web pages into structured, RAG-ready JSON chunks. It combines discovery, crawling,
 memory-safe PDF extraction, HTML cleanup, token-aware chunking, metadata enrichment,
 quality checks, and optional publishing to Yandex services.
@@ -28,15 +28,15 @@ Requirements: Python 3.11+, Tesseract, and Poppler. OCR binaries are optional fo
 offline demo but required for image-only PDFs.
 
 ```bash
-git clone https://github.com/your-account/spec-scraper.git
-cd spec-scraper
+git clone https://github.com/getanotherone/doc-harvester.git
+cd doc-harvester
 
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e '.[dev]'
 
-spec-scraper demo
+doc-harvester demo
 ```
 
 The demo uses embedded HTML, requires no credentials or network access, and writes
@@ -46,20 +46,20 @@ The demo uses embedded HTML, requires no credentials or network access, and writ
 
 ```bash
 # Crawl locally without uploading
-spec-scraper crawl https://example.com/catalog/ --no-upload
+doc-harvester crawl https://example.com/catalog/ --no-upload
 
 # Discover URLs through Yandex Search API
-spec-scraper discover example.com --term "technical catalogue" --output discovery.json
+doc-harvester discover example.com --term "technical catalogue" --output discovery.json
 
 # Process linked files and upload results (requires YANDEX_DISK_TOKEN)
-spec-scraper files https://example.com/downloads/
+doc-harvester files https://example.com/downloads/
 
 # Upload an already processed local dataset
-spec-scraper upload electrical/example.com
+doc-harvester upload electrical/example.com
 
 # Run the optional API
 python -m pip install -e '.[api]'
-SCRAPPER_API_KEY=change-me spec-scraper api
+SCRAPPER_API_KEY=change-me doc-harvester api
 ```
 
 Copy `.env.example` to `.env` for local configuration. Never commit `.env`.
@@ -95,7 +95,7 @@ discovery -> crawler/fetcher -> extractor -> unit JSON
 ```
 
 - `src/`: standalone crawler, extractors, chunker, quality checks, and providers.
-- `src/spec_scraper/`: public package and CLI.
+- `src/doc_harvester/`: public package and CLI.
 - `api/`: optional FastAPI wrapper for scraper operations.
 - `services/doc_proc/`: separate document-processing service with richer parsing,
   chunking strategies, embeddings, PostgreSQL, Redis, and MinIO.

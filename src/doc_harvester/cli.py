@@ -9,8 +9,8 @@ from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse
 
-from spec_scraper import __version__
-from spec_scraper.demo import write_demo_result
+from doc_harvester import __version__
+from doc_harvester.demo import write_demo_result
 
 
 def _disk_folder(url: str) -> str:
@@ -71,7 +71,7 @@ def _run_api(args: argparse.Namespace) -> int:
     try:
         import uvicorn
     except ImportError as error:
-        raise SystemExit("Install API dependencies with: pip install 'spec-scraper[api]'") from error
+        raise SystemExit("Install API dependencies with: pip install 'doc-harvester[api]'") from error
     uvicorn.run("api.main:app", host=args.host, port=args.port, reload=args.reload)
     return 0
 
@@ -85,7 +85,7 @@ def _run_demo(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="spec-scraper",
+        prog="doc-harvester",
         description="Build RAG-ready datasets from technical documents and websites.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
