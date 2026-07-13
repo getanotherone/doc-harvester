@@ -1,4 +1,5 @@
 {
+  "schema_version": 1,
   "queries": [
     "site:.ru электротехническое оборудование каталог pdf",
     "site:.ru кабельная продукция каталог pdf",
@@ -13,5 +14,9 @@
   "priority_domains": [
     "electro", "cable", "iek", "ekf", "abb",
     "se.com", "legrand", "elektromir", "ruscable"
-  ]
+  ],
+  "metadata": {
+    "domain": "electrical",
+    "language": "ru"
+  }
 }

@@ -7,16 +7,27 @@ import requests
 YANDEX_API_UPLOAD = "https://cloud-api.yandex.net/v1/disk/resources/upload"
 YANDEX_API_RESOURCES = "https://cloud-api.yandex.net/v1/disk/resources"
 
-TOKEN = os.environ.get("YANDEX_DISK_TOKEN")
-if not TOKEN:
-    raise RuntimeError("YANDEX_DISK_TOKEN is not set. Export it before running the script.")
-
-HEADERS = {"Authorization": f"OAuth {TOKEN}"}
+_configured_token: Optional[str] = None
 YANDEX_API_DOWNLOAD = "https://cloud-api.yandex.net/v1/disk/resources/download"
 
 # Folder cache — avoid redundant ensure_folder API calls
 _folder_cache: Set[str] = set()
 _folder_cache_lock = threading.Lock()
+
+
+def configure_token(token: str) -> None:
+    """Configure a token explicitly for provider-based integrations."""
+    global _configured_token
+    _configured_token = token.strip()
+    if not _configured_token:
+        raise ValueError("Yandex Disk token cannot be empty")
+
+
+def _headers() -> Dict[str, str]:
+    token = _configured_token or os.environ.get("YANDEX_DISK_TOKEN", "").strip()
+    if not token:
+        raise RuntimeError("YANDEX_DISK_TOKEN is required for Yandex Disk operations")
+    return {"Authorization": f"OAuth {token}"}
 
 
 def ensure_folder(path: str) -> None:
@@ -26,7 +37,7 @@ def ensure_folder(path: str) -> None:
 
     response = requests.put(
         YANDEX_API_RESOURCES,
-        headers=HEADERS,
+        headers=_headers(),
         params={"path": path},
         timeout=30,
     )
@@ -61,7 +72,7 @@ def ensure_tree(path: str) -> None:
 def path_exists(path: str) -> bool:
     response = requests.get(
         YANDEX_API_RESOURCES,
-        headers=HEADERS,
+        headers=_headers(),
         params={"path": path},
         timeout=30,
     )
@@ -75,7 +86,7 @@ def path_exists(path: str) -> bool:
 def delete_path(path: str) -> None:
     response = requests.delete(
         YANDEX_API_RESOURCES,
-        headers=HEADERS,
+        headers=_headers(),
         params={"path": path, "permanently": True},
         timeout=30,
     )
@@ -86,7 +97,7 @@ def delete_path(path: str) -> None:
 def get_file_hash(path: str) -> Optional[str]:
     response = requests.get(
         YANDEX_API_RESOURCES,
-        headers=HEADERS,
+        headers=_headers(),
         params={"path": path, "fields": "sha256"},
         timeout=30,
     )
@@ -101,7 +112,7 @@ def list_directory(path: str, limit: int = 200, offset: int = 0) -> List[Dict]:
     """List one page of resources in a Yandex Disk folder."""
     response = requests.get(
         YANDEX_API_RESOURCES,
-        headers=HEADERS,
+        headers=_headers(),
         params={
             "path": path,
             "limit": limit,
@@ -136,7 +147,7 @@ def list_all(path: str) -> List[Dict]:
 def get_download_url(path: str) -> str:
     response = requests.get(
         YANDEX_API_DOWNLOAD,
-        headers=HEADERS,
+        headers=_headers(),
         params={"path": path},
         timeout=30,
     )
@@ -159,7 +170,7 @@ def download_file(path: str, local_path: str) -> None:
 def _get_upload_url(disk_path: str, overwrite: bool = False) -> str:
     response = requests.get(
         YANDEX_API_UPLOAD,
-        headers=HEADERS,
+        headers=_headers(),
         params={"path": disk_path, "overwrite": overwrite},
         timeout=30,
     )
@@ -170,7 +181,7 @@ def _get_upload_url(disk_path: str, overwrite: bool = False) -> str:
 def upload_by_url(file_url: str, disk_path: str) -> None:
     response = requests.post(
         YANDEX_API_UPLOAD,
-        headers=HEADERS,
+        headers=_headers(),
         params={"url": file_url, "path": disk_path, "overwrite": False},
         timeout=60,
     )

@@ -42,12 +42,20 @@ excluded from Git.
 - `services/doc_proc/` owns its database, queue, storage, embedding, and parsing concerns.
 - `scripts/` contains advanced operations that are not yet part of the stable CLI.
 
-## Current coupling
+## Provider boundaries
 
-Yandex Disk is still coupled to upload operations, and domain heuristics are still tuned
-for electrical-engineering terminology. The next architecture phase introduces explicit
-interfaces for discovery, storage, publishing, and profile validation. Until then, local
-processing and the offline demo are the vendor-neutral baseline.
+The standalone runtime selects storage through `doc_harvester.storage.StorageProvider`.
+Local filesystem storage is the credential-free default; Yandex Disk and S3-compatible
+stores are optional adapters. Publishing uses the independent
+`doc_harvester.publishers.Publisher` contract with local Markdown and Yandex Wiki
+implementations.
+
+Discovery profiles are validated by `doc_harvester.profiles.DiscoveryProfile` before use.
+The current scoring implementation is still heuristic, but terminology now comes from
+validated profile files rather than an implicit electrical fallback.
+
+The legacy optimized Yandex batch uploader remains in `scraper.py` as a compatibility
+surface. New integrations should use the public provider contracts.
 
 ## Reliability controls
 

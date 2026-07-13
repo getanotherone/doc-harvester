@@ -5,11 +5,12 @@ import json
 import os
 import shutil
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List
 from urllib.parse import urlparse
 
-import requests
 from dotenv import load_dotenv
+
+from doc_harvester.publishers import YandexWikiPublisher
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(ROOT, ".env"))
@@ -47,79 +48,8 @@ def _write_json(path: str, payload: Dict) -> None:
         json.dump(payload, file, ensure_ascii=False, indent=2)
 
 
-class YandexWikiClient:
-    def __init__(self, token: str, cloud_org_id: str, base_url: str) -> None:
-        self.cloud_org_id = cloud_org_id
-        self.base_url = base_url.rstrip("/")
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "Authorization": f"OAuth {token}",
-                "X-Org-Id": cloud_org_id,
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-        )
-
-    def _api(self, path: str) -> str:
-        return f"{self.base_url}{path}"
-
-    def get_page_by_slug(self, slug: str) -> Optional[Dict]:
-        url = self._api("/v1/pages")
-        response = self.session.get(
-            url,
-            params={"slug": slug},
-            timeout=60,
-        )
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
-        payload = response.json()
-        if isinstance(payload, dict) and payload.get("id"):
-            return payload
-        data = payload.get("data") or []
-        return data[0] if data else None
-
-    def read_page_content(self, page_id: int) -> Optional[str]:
-        """Read page content by ID. Returns None if page has no content."""
-        url = self._api(f"/v1/pages/{page_id}")
-        response = self.session.get(url, params={"fields": "content"}, timeout=60)
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
-        return response.json().get("content")
-
-    def create_page(self, slug: str, title: str, content: str) -> Dict:
-        url = self._api("/v1/pages")
-        response = self.session.post(
-            url,
-            json={
-                "slug": slug,
-                "title": title,
-                "content": content,
-                "page_type": "wysiwyg",
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-        return response.json()
-
-    def update_page(self, page_id: str, title: str, content: str) -> Dict:
-        url = self._api(f"/v1/pages/{page_id}")
-        response = self.session.post(
-            url,
-            json={
-                "title": title,
-                "content": content,
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-        return response.json()
-
-
 def publish_pages(
-    client: YandexWikiClient,
+    client: YandexWikiPublisher,
     page_map: List[Dict],
     dry_run: bool = True,
     create_missing: bool = False,
@@ -251,7 +181,7 @@ def main() -> None:
     if not pages:
         raise RuntimeError(f"No pages in map: {args.map}")
 
-    client = YandexWikiClient(token=args.token, cloud_org_id=args.org_id, base_url=args.base_url)
+    client = YandexWikiPublisher(token=args.token, cloud_org_id=args.org_id, base_url=args.base_url)
     publish_result = publish_pages(
         client=client,
         page_map=pages,

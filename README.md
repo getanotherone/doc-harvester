@@ -18,8 +18,8 @@ scraper for every website or document type.
 - Preserve tables and normative clauses during token-aware chunking.
 - Add retrieval metadata such as document, page, section, vendor, standard, year,
   language, source type, and quality status.
-- Store output locally and optionally upload it to Yandex Disk.
-- Publish generated documentation to Yandex Wiki through an explicit local page map.
+- Store output locally, on Yandex Disk, or in S3-compatible object storage.
+- Publish generated documentation locally or to Yandex Wiki through provider adapters.
 - Run a FastAPI service and an optional, independently deployable DocProc service.
 
 ## Quick Start
@@ -48,14 +48,27 @@ The demo uses embedded HTML, requires no credentials or network access, and writ
 # Crawl locally without uploading
 doc-harvester crawl https://example.com/catalog/ --no-upload
 
+# Crawl and copy generated artifacts into local provider storage
+doc-harvester crawl https://example.com/catalog/ --storage local
+
 # Discover URLs through Yandex Search API
 doc-harvester discover example.com --term "technical catalogue" --output discovery.json
 
-# Process linked files and upload results (requires YANDEX_DISK_TOKEN)
-doc-harvester files https://example.com/downloads/
+# Process linked files and store results locally (the safe default)
+doc-harvester files https://example.com/downloads/ --storage local
 
-# Upload an already processed local dataset
-doc-harvester upload electrical/example.com
+# Store an already processed dataset with any configured adapter
+doc-harvester upload electrical/example.com --storage local
+doc-harvester upload electrical/example.com --storage yandex
+doc-harvester upload electrical/example.com --storage s3
+
+# Validate or list discovery profiles
+doc-harvester profile validate electrical
+doc-harvester profile list
+
+# Preview or apply publication of one Markdown artifact
+doc-harvester publish README.md docs/readme
+doc-harvester publish README.md docs/readme --apply
 
 # Run the optional API
 python -m pip install -e '.[api]'
@@ -102,8 +115,10 @@ discovery -> crawler/fetcher -> extractor -> unit JSON
 - `config/profiles/`: domain discovery profiles.
 - `scripts/`: advanced operational and Wiki automation commands.
 
-Yandex Disk and Yandex Wiki are adapters, not requirements for local extraction and
-chunking. Additional storage and publisher interfaces are planned for the next phase.
+Yandex Disk and Yandex Wiki are optional adapters, not requirements for extraction and
+chunking. Public storage and publisher contracts are available under
+`doc_harvester.storage` and `doc_harvester.publishers`. S3 support is installed with
+`pip install -e '.[s3]'`; Wiki automation uses `pip install -e '.[wiki]'`.
 
 ## Development
 

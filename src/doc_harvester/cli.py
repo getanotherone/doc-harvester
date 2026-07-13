@@ -18,10 +18,20 @@ def _disk_folder(url: str) -> str:
     return f"/datasets/specs/{domain}/{date.today().isoformat()}"
 
 
+def _configure_profile(scraper, name: str) -> None:
+    from doc_harvester.profiles import load_profile
+
+    scraper.configure_profile(load_profile(name))
+
+
 def _run_crawl(args: argparse.Namespace) -> int:
     import scraper
 
+    _configure_profile(scraper, args.profile)
     scraper.UPLOAD_ENABLED = not args.no_upload
+    scraper.STORAGE_PROVIDER = args.storage
+    if args.local_root:
+        os.environ["DOC_HARVESTER_LOCAL_STORAGE_ROOT"] = args.local_root
     scraper.BFS_ENABLED = not args.no_bfs
     if args.min_score is not None:
         scraper.WEB_MIN_PRODUCT_SCORE = args.min_score
@@ -37,6 +47,11 @@ def _run_crawl(args: argparse.Namespace) -> int:
 def _run_files(args: argparse.Namespace) -> int:
     import scraper
 
+    _configure_profile(scraper, args.profile)
+    scraper.UPLOAD_ENABLED = not args.no_upload
+    scraper.STORAGE_PROVIDER = args.storage
+    if args.local_root:
+        os.environ["DOC_HARVESTER_LOCAL_STORAGE_ROOT"] = args.local_root
     scraper.ingest_page(args.url, _disk_folder(args.url))
     return 0
 
@@ -44,16 +59,48 @@ def _run_files(args: argparse.Namespace) -> int:
 def _run_upload(args: argparse.Namespace) -> int:
     import scraper
 
-    result = scraper.batch_upload_to_yandex(args.path, disk_base=args.disk_base)
-    return 0 if result.get("failed", 0) == 0 else 1
+    from doc_harvester.storage import create_storage
+
+    source = Path(args.path)
+    if not source.exists():
+        source = Path(scraper.LOCAL_DATASET_ROOT) / args.path
+    if not source.exists():
+        raise FileNotFoundError(f"dataset not found: {args.path}")
+    path_label = source.name if Path(args.path).is_absolute() else args.path.strip("/")
+    destination = args.destination or "/".join(
+        part
+        for part in (args.disk_base.strip("/"), path_label, date.today().isoformat())
+        if part
+    )
+    if source.is_file() and not args.destination:
+        destination = f"{destination}/{source.name}"
+    storage = create_storage(args.storage, root=args.local_root)
+    if source.is_file():
+        storage.put_file(source, destination, overwrite=args.overwrite)
+        result = {
+            "provider": storage.name,
+            "destination": destination,
+            "files_uploaded": 1,
+            "bytes_uploaded": source.stat().st_size,
+        }
+    else:
+        result = storage.upload_tree(source, destination, overwrite=args.overwrite).to_dict()
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
 
 
 def _run_discover(args: argparse.Namespace) -> int:
     from yandex_search import discover_via_search
 
+    search_terms = args.term
+    if not search_terms and args.profile:
+        from doc_harvester.profiles import load_profile
+
+        search_terms = list(load_profile(args.profile).priority_terms)
+
     urls = discover_via_search(
         args.domain,
-        search_terms=args.term or None,
+        search_terms=search_terms or None,
         max_queries=args.max_queries,
         pages_per_term=args.pages_per_term,
     )
@@ -83,6 +130,35 @@ def _run_demo(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_profile_list(args: argparse.Namespace) -> int:
+    from doc_harvester.profiles import list_profiles
+
+    profiles = list_profiles(args.directory)
+    print(json.dumps({"profiles": profiles, "count": len(profiles)}, indent=2))
+    return 0
+
+
+def _run_profile_validate(args: argparse.Namespace) -> int:
+    from doc_harvester.profiles import load_profile
+
+    profile = load_profile(args.profile, profiles_dir=args.directory)
+    print(json.dumps({"name": profile.name, "valid": True, "profile": profile.to_dict()}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _run_publish(args: argparse.Namespace) -> int:
+    from doc_harvester.publishers import PublishRequest, create_publisher
+
+    publisher = create_publisher(args.publisher, root=args.local_root)
+    result = publisher.publish(
+        PublishRequest(Path(args.source), args.destination, args.title),
+        dry_run=not args.apply,
+        create_missing=args.create_missing,
+    )
+    print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
+    return 0 if result.status not in {"failed", "missing"} else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="doc-harvester",
@@ -94,6 +170,7 @@ def build_parser() -> argparse.ArgumentParser:
     discover = commands.add_parser("discover", help="Discover domain URLs with Yandex Search API")
     discover.add_argument("domain", help="Domain to search, for example example.com")
     discover.add_argument("--term", action="append", help="Search term; repeat for multiple terms")
+    discover.add_argument("--profile", help="Use priority terms from a validated profile")
     discover.add_argument("--max-queries", type=int, default=20)
     discover.add_argument("--pages-per-term", type=int, default=2)
     discover.add_argument("--output", help="Write discovery JSON to this path")
@@ -105,17 +182,69 @@ def build_parser() -> argparse.ArgumentParser:
     crawl.add_argument("--spa", action="store_true", help="Render JavaScript-heavy pages")
     crawl.add_argument("--no-bfs", action="store_true")
     crawl.add_argument("--no-upload", action="store_true", help="Keep output local")
+    crawl.add_argument(
+        "--storage",
+        choices=("local", "yandex", "s3"),
+        default=os.environ.get("DOC_HARVESTER_STORAGE", "local"),
+    )
+    crawl.add_argument("--local-root", help="Override local storage root")
     crawl.add_argument("--min-score", type=int)
+    crawl.add_argument(
+        "--profile", default=os.environ.get("DOC_HARVESTER_PROFILE", "electrical")
+    )
     crawl.set_defaults(handler=_run_crawl)
 
     files = commands.add_parser("files", help="Find and process linked documents")
     files.add_argument("url")
+    files.add_argument("--no-upload", action="store_true", help="Keep output only in datasets/")
+    files.add_argument(
+        "--storage",
+        choices=("local", "yandex", "s3"),
+        default=os.environ.get("DOC_HARVESTER_STORAGE", "local"),
+    )
+    files.add_argument("--local-root", help="Override local storage root")
+    files.add_argument(
+        "--profile", default=os.environ.get("DOC_HARVESTER_PROFILE", "electrical")
+    )
     files.set_defaults(handler=_run_files)
 
-    upload = commands.add_parser("upload", help="Upload an existing local dataset")
+    upload = commands.add_parser("upload", help="Store an existing local dataset")
     upload.add_argument("path")
+    upload.add_argument(
+        "--storage",
+        choices=("local", "yandex", "s3"),
+        default=os.environ.get("DOC_HARVESTER_STORAGE", "local"),
+    )
+    upload.add_argument("--destination", help="Provider-relative destination")
     upload.add_argument("--disk-base", default="/datasets/specs")
+    upload.add_argument("--local-root", help="Override local storage root")
+    upload.add_argument("--no-overwrite", dest="overwrite", action="store_false")
+    upload.set_defaults(overwrite=True)
     upload.set_defaults(handler=_run_upload)
+
+    publish = commands.add_parser("publish", help="Publish a generated text artifact")
+    publish.add_argument("source")
+    publish.add_argument("destination")
+    publish.add_argument(
+        "--publisher",
+        choices=("local", "yandex-wiki"),
+        default=os.environ.get("DOC_HARVESTER_PUBLISHER", "local"),
+    )
+    publish.add_argument("--title", default="")
+    publish.add_argument("--local-root", help="Override local publisher root")
+    publish.add_argument("--apply", action="store_true", help="Apply instead of dry-run")
+    publish.add_argument("--create-missing", action="store_true")
+    publish.set_defaults(handler=_run_publish)
+
+    profile = commands.add_parser("profile", help="List or validate discovery profiles")
+    profile_commands = profile.add_subparsers(dest="profile_command", required=True)
+    profile_list = profile_commands.add_parser("list")
+    profile_list.add_argument("--directory", default="config/profiles")
+    profile_list.set_defaults(handler=_run_profile_list)
+    profile_validate = profile_commands.add_parser("validate")
+    profile_validate.add_argument("profile", help="Profile name or JSON path")
+    profile_validate.add_argument("--directory", default="config/profiles")
+    profile_validate.set_defaults(handler=_run_profile_validate)
 
     api = commands.add_parser("api", help="Run the optional HTTP API")
     api.add_argument("--host", default="127.0.0.1")
