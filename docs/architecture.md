@@ -47,8 +47,8 @@ excluded from Git.
 The standalone runtime selects storage through `doc_harvester.storage.StorageProvider`.
 Local filesystem storage is the credential-free default; Yandex Disk and S3-compatible
 stores are optional adapters. Publishing uses the independent
-`doc_harvester.publishers.Publisher` contract with local Markdown and Yandex Wiki
-implementations.
+`doc_harvester.publishers.Publisher` contract with local Markdown, Yandex Wiki,
+Confluence Cloud, Notion, and plugin-provided implementations.
 
 Discovery profiles are validated by `doc_harvester.profiles.DiscoveryProfile` before use.
 The current scoring implementation is still heuristic, but terminology now comes from

@@ -1,12 +1,13 @@
 {
+  "publisher": "yandex-wiki",
   "pages": [
     {
       "source": "wiki/out/01-roadmap.md",
-      "slug": "https://wiki.yandex.ru/homepage/your-project/scraper/roadmap/"
+      "destination": "homepage/your-project/scraper/roadmap"
     },
     {
       "source": "wiki/out/02-stage-1.md",
-      "slug": "https://wiki.yandex.ru/homepage/your-project/scraper/roadmap/stage-1/"
+      "destination": "homepage/your-project/scraper/roadmap/stage-1"
     }
   ]
 }

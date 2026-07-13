@@ -21,6 +21,13 @@ def test_cli_exposes_public_commands():
         assert args.command == command
 
 
+def test_cli_accepts_installed_publisher_name():
+    args = build_parser().parse_args(
+        ["publish", "README.md", "remote-page", "--publisher", "third-party-docs"]
+    )
+    assert args.publisher == "third-party-docs"
+
+
 def test_offline_demo_contract():
     result = build_demo_result()
     assert result["schema_version"] == 1

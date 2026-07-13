@@ -10,7 +10,8 @@
 - приводить их к единой chunk-модели,
 - считать quality/eval-метрики,
 - загружать результаты в Yandex Disk,
-- поддерживать актуальную документацию в Yandex Wiki.
+- поддерживать актуальную документацию локально, в Yandex Wiki, Confluence Cloud,
+  Notion или подключаемом сервисе документации.
 
 Ключевой фокус текущего контура: `электротехническое оборудование`, включая каталоги и нормативные документы.
 
@@ -120,17 +121,15 @@
   - `runs/auto_eval_<timestamp>.json`
   - `runs/auto_eval_latest.json`
 
-### 2.8 Backfill из Yandex Disk
-- Дозаполнение уже загруженных ранее файлов:
-  - скачивание с Disk
-  - extraction + chunking + minimal
-  - quality gate
-  - upload в `_processed` или `_quarantine`
-- Поддерживает параллельную обработку (`--workers`).
+### 2.8 Обработка существующих данных
+Legacy backfill старого приватного Yandex-корпуса удалён из open-source репозитория.
+Существующий локальный dataset можно повторно обработать через public extraction,
+chunking и storage contracts без зависимости от прежнего корпуса.
 
-### 2.9 Wiki automation
+### 2.9 Documentation automation
 - Автогенерация markdown-страниц wiki (`wiki/out`) из шаблонов + фактических логов.
-- Публикация/обновление страниц в Yandex Wiki через API:
+- Публикация/обновление страниц через единый `Publisher` API в local, Yandex Wiki,
+  Confluence Cloud, Notion или внешний plugin:
   - dry-run
   - apply
   - create-missing
@@ -161,7 +160,7 @@
    - Далее общий pipeline: chunking → `chunks` + `chunks_minimal` → quality gate → route в `_processed` или `_quarantine`
 4. Auto-eval.
 5. Build docs.
-6. Publish wiki (по команде).
+6. Publish documentation (по команде).
 
 ### 3.2 Основные модули
 - `scraper.py` — основной ingest pipeline: `ingest_page()` (файлы) + `ingest_web()` (веб-страницы), CLI с argparse.
@@ -173,7 +172,8 @@
 - `scripts/discover_sources.py` — discovery.
 - `scripts/backfill_from_yandex.py` — backfill.
 - `scripts/build_wiki.py` — сборка wiki markdown из шаблонов + метрик.
-- `scripts/publish_wiki.py` — публикация wiki через API.
+- `scripts/publish_docs.py` — provider-neutral публикация документации через API.
+- `scripts/publish_wiki.py` — compatibility wrapper для старых команд.
 
 ---
 
@@ -201,9 +201,8 @@ Quarantine:
 
 ### 4.3 Runs
 - `runs/ingest_*.json` — манифесты ingest-run.
-- `runs/backfill_from_yandex.json` — отчёт backfill.
 - `runs/auto_eval_*.json` + `auto_eval_latest.json`.
-- `runs/wiki_publish_*.json` — отчёты публикации wiki.
+- `runs/publish_*.json` — отчёты публикации документации.
 - `runs/wiki_snapshots/<timestamp>` — snapshot перед wiki apply.
 
 ---
@@ -241,54 +240,52 @@ python src/scraper.py
 
 ### 5.3 Discovery
 ```bash
-bash scripts/run_discovery.sh
-bash scripts/run_discovery.sh --profile electrical --top-n 80 --limit-per-query 30
+python scripts/discover_sources.py
+python scripts/discover_sources.py --profile electrical --top-n 80 --limit-per-query 30
 ```
 
 ### 5.4 Backfill
-```bash
-bash scripts/run_backfill_yandex.sh --limit 20 --workers 4
-```
+Legacy backfill command отсутствует в open-source версии. Используйте обычный ingest или
+provider API для повторной обработки нужного локального dataset.
 
 ### 5.5 Quality + eval
-```bash
-bash scripts/run_quality_eval.sh
-bash scripts/run_quality_eval.sh --refresh-quality
-```
+Quality gate вызывается ingest pipeline. Для программного запуска доступны
+`evaluate_quality_for_dataset()` и `run_auto_eval()` из `quality_eval`.
 
 ### 5.6 Rechunk миграция для старых данных
 ```bash
-bash scripts/run_rechunk.sh
-bash scripts/run_quality_eval.sh --refresh-quality
+python scripts/rechunk_all.py --dry-run
+python scripts/rechunk_all.py
 ```
 
 ### 5.7 Сборка wiki markdown (локально)
 ```bash
-bash scripts/run_docs.sh
+python scripts/build_wiki.py
 ```
 
-### 5.8 Публикация в Yandex Wiki
+### 5.8 Публикация документации
 ```bash
 # dry-run
-bash scripts/run_publish_wiki.sh
+python scripts/publish_docs.py --map config/wiki_publish_map.json
 
 # apply
-bash scripts/run_publish_wiki.sh --apply
+python scripts/publish_docs.py --map config/wiki_publish_map.json --apply
 ```
 
 ### 5.9 Полный цикл
-```bash
-bash scripts/run_all.sh
-```
+Единого `run_all.sh` в open-source версии нет. Запускайте discovery, ingest, проверку
+артефактов, `build_wiki.py` и `publish_docs.py` явно, чтобы remote writes оставались
+контролируемыми.
 
 ---
 
 ## 6. Переменные окружения
 
 ### 6.1 Обязательные
-- `YANDEX_DISK_TOKEN` — доступ к Yandex Disk API.
-- `YANDEX_WIKI_TOKEN` — доступ к Yandex Wiki API (для публикации).
-- `YANDEX_WIKI_CLOUD_ORG_ID` — org id для wiki API.
+Обязательны только credentials выбранных providers. Local-only режим credentials не
+требует. Для Yandex нужны `YANDEX_DISK_TOKEN` и/или `YANDEX_WIKI_TOKEN` с
+`YANDEX_WIKI_CLOUD_ORG_ID`; для Confluence — `CONFLUENCE_BASE_URL`, `CONFLUENCE_EMAIL`,
+`CONFLUENCE_API_TOKEN`, `CONFLUENCE_SPACE_ID`; для Notion — `NOTION_TOKEN`.
 
 ### 6.2 Рекомендуемые/опциональные
 - `YANDEX_WIKI_API_BASE` (default: `https://api.wiki.yandex.net`)
@@ -329,17 +326,20 @@ bash scripts/run_all.sh
 
 ---
 
-## 8. Вики-автоматизация (отдельно)
+## 8. Автоматизация документации (отдельно)
 
 ### 8.1 Что автоматизируется
 - Сборка страниц из шаблонов (`wiki/content`) и актуальных метрик (`runs + datasets logs`) в `wiki/out`.
-- Публикация `wiki/out/*.md` в конкретные страницы Yandex Wiki по карте `config/wiki_publish_map.json`.
+- Публикация `wiki/out/*.md` в local, Yandex Wiki, Confluence Cloud, Notion или
+  plugin-provider по карте `config/wiki_publish_map.json`.
 
 ### 8.2 Карта публикации
 Локальный `config/wiki_publish_map.json` создаётся из публичного шаблона
 `config/wiki_publish_map.example.json`:
 - `source` — имя markdown-файла в `wiki/out`.
-- `slug` — путь страницы в Wiki (можно указать и полный URL; скрипт нормализует).
+- `destination` — provider-specific target (`slug`, `page:<id>`, `title:<title>` или
+  `parent:<id>` в зависимости от provider).
+- `slug` — legacy alias для существующих Yandex-карт.
 - `title` — заголовок страницы при update/create.
 
 ### 8.3 Режимы публикации
@@ -351,7 +351,7 @@ bash scripts/run_all.sh
 - Перед `--apply` автоматически делается snapshot:
   - `runs/wiki_snapshots/<timestamp>`
 - Отчёт о публикации пишется в:
-  - `runs/wiki_publish_<mode>_<timestamp>.json`
+  - `runs/publish_<mode>_<timestamp>.json`
 
 ---
 
@@ -375,10 +375,10 @@ bash scripts/run_all.sh
 3. `run_ingest`.
 4. `run_quality_eval`.
 5. `run_docs`.
-6. `run_publish_wiki.sh` (dry-run -> apply).
+6. `python scripts/publish_docs.py` (dry-run -> `--apply`).
 
 Для миграции старого корпуса:
 1. `run_rechunk`.
 2. `run_quality_eval --refresh-quality`.
 3. `run_docs`.
-4. `run_publish_wiki.sh --apply`.
+4. `python scripts/publish_docs.py --apply`.
