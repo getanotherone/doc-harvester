@@ -15,7 +15,7 @@ dist/
 data/
 datasets/
 demo-output/
-storage/
+/storage/
 published/
 
 # Local agent configuration
