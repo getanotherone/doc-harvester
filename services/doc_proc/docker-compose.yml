@@ -1,0 +1,100 @@
+services:
+  postgres:
+    image: paradedb/paradedb:latest-pg17
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: doc_proc
+      POSTGRES_PASSWORD: doc_proc
+      POSTGRES_DB: doc_proc
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: >
+      postgres
+        -c shared_buffers=1GB
+        -c effective_cache_size=3GB
+        -c work_mem=64MB
+        -c maintenance_work_mem=512MB
+        -c random_page_cost=1.1
+        -c jit=off
+        -c max_wal_size=2GB
+        -c wal_buffers=64MB
+    shm_size: '2g'
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U doc_proc"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - miniodata:/data
+    command: server /data --console-address ":9001"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/alembic:/app/alembic
+      - ./tests:/app/tests
+      - ./samples:/app/samples
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    command: >
+      bash -c "alembic upgrade head &&
+               uvicorn doc_proc.api.main:app --host 0.0.0.0 --port 8000 --workers 2"
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+        reservations:
+          memory: 1g
+
+volumes:
+  pgdata:
+  miniodata:

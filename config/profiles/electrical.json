@@ -1,0 +1,17 @@
+{
+  "queries": [
+    "site:.ru электротехническое оборудование каталог pdf",
+    "site:.ru кабельная продукция каталог pdf",
+    "site:.ru электрощит оборудование каталог docx",
+    "site:.ru низковольтное оборудование каталог xlsx",
+    "site:.ru производитель электротехнической продукции каталог"
+  ],
+  "priority_terms": [
+    "электр", "кабель", "низковольт", "щит", "автомат",
+    "распредел", "iek", "ekf", "abb", "schneider", "legrand"
+  ],
+  "priority_domains": [
+    "electro", "cable", "iek", "ekf", "abb",
+    "se.com", "legrand", "elektromir", "ruscable"
+  ]
+}

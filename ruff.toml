@@ -1,0 +1,12 @@
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # line too long — handled by formatter, not linter
+    "E402",  # module-level import not at top — we use lazy imports
+    "F401",  # unused import — conftest re-exports
+    "E722",  # bare except — used in retry logic
+    "F841",  # local variable assigned but never used
+]

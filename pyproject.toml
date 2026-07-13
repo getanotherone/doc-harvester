@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spec-scraper"
+version = "0.1.0"
+description = "A configurable ingestion pipeline for technical documents and RAG datasets"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [{name = "Andrei Galai"}]
+keywords = ["scraper", "rag", "pdf", "ocr", "document-processing", "chunking"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Text Processing :: Indexing",
+]
+dependencies = [
+  "beautifulsoup4==4.12.3",
+  "openpyxl==3.1.5",
+  "pdf2image==1.17.0",
+  "pdfminer.six==20231228",
+  "pytesseract==0.3.10",
+  "playwright==1.58.0",
+  "requests==2.32.3",
+  "tiktoken==0.7.0",
+]
+
+[project.optional-dependencies]
+api = [
+  "fastapi==0.115.0",
+  "uvicorn[standard]==0.30.6",
+  "pydantic==2.8.2",
+]
+dev = [
+  "httpx==0.27.2",
+  "pytest==8.3.3",
+  "pytest-asyncio==0.24.0",
+  "ruff>=0.15.0",
+]
+
+[project.scripts]
+spec-scraper = "spec_scraper.cli:main"
+
+[tool.setuptools]
+packages = ["spec_scraper", "api", "api.routers"]
+package-dir = {"" = "src", "api" = "api", "api.routers" = "api/routers"}
+py-modules = [
+  "browser",
+  "chunker",
+  "extractors",
+  "pdf_extractor_v2",
+  "quality_eval",
+  "scraper",
+  "sitemap",
+  "yandex",
+  "yandex_search",
+]
+package-data = {api = ["openapi.yaml"]}

@@ -1,0 +1,20 @@
+.env
+config/wiki_publish_map.json
+.venv*/
+__pycache__/
+*.pyc
+runs/
+discovery/
+wiki/out/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.DS_Store
+data/
+datasets/
+demo-output/
+
+# Local agent configuration
+.claude/settings.local.json

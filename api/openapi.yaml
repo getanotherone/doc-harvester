@@ -1,0 +1,533 @@
+openapi: 3.1.0
+info:
+  title: Scrapper Microservice API
+  description: |
+    Discovery, crawling, and fetching service for downstream knowledge bases.
+    Scrapper handles source discovery, BFS catalogue traversal, file downloading,
+    and web HTML cleaning. A downstream processor can handle parsing, chunking,
+    embedding, and storage.
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /discover:
+    post:
+      summary: Start source discovery
+      description: |
+        Launches a search engine query session to find candidate websites
+        matching the given profile. Runs asynchronously — poll task status
+        via GET /discover/{task_id}/status.
+      operationId: startDiscovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverRequest"
+      responses:
+        "202":
+          description: Discovery task accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCreated"
+
+  /discover/{task_id}/status:
+    get:
+      summary: Get discovery task status
+      operationId: getDiscoveryStatus
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: Task status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoverStatus"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /sources:
+    get:
+      summary: List discovered sources
+      description: Returns all discovered source candidates, optionally filtered by status.
+      operationId: listSources
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [candidate, approved, rejected]
+          description: Filter by approval status
+        - name: profile
+          in: query
+          schema:
+            type: string
+          description: Filter by discovery profile name
+      responses:
+        "200":
+          description: List of sources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcesList"
+
+  /sources/{source_id}/approve:
+    post:
+      summary: Approve or reject a source
+      operationId: approveSource
+      parameters:
+        - name: source_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveRequest"
+      responses:
+        "200":
+          description: Source status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Source"
+
+  /crawl:
+    post:
+      summary: Start BFS catalogue crawl
+      description: |
+        Launches a BFS traversal of a catalogue starting from the given URL.
+        Discovers product pages and file download links. Runs asynchronously.
+      operationId: startCrawl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrawlRequest"
+      responses:
+        "202":
+          description: Crawl task accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCreated"
+
+  /crawl/{task_id}/status:
+    get:
+      summary: Get crawl task progress
+      operationId: getCrawlStatus
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: Crawl progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrawlStatus"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /fetch:
+    post:
+      summary: Fetch documents by URL list
+      description: |
+        Downloads documents from a list of URLs. For files (PDF, DOCX, XLSX),
+        downloads as-is. For web pages, returns cleaned HTML with commercial
+        content, navigation, and boilerplate removed.
+      operationId: startFetch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FetchRequest"
+      responses:
+        "202":
+          description: Fetch task accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskCreated"
+
+  /fetch/{task_id}/results:
+    get:
+      summary: Get fetch results
+      operationId: getFetchResults
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: Fetch results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FetchResults"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /clean-html:
+    post:
+      summary: Clean raw HTML
+      description: |
+        Accepts raw HTML and returns cleaned version with navigation,
+        advertisements, commercial content, and boilerplate removed.
+        Synchronous endpoint for on-demand use by downstream processors.
+      operationId: cleanHtml
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CleanHtmlRequest"
+      responses:
+        "200":
+          description: Cleaned HTML
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CleanHtmlResponse"
+
+components:
+  parameters:
+    TaskId:
+      name: task_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, version]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        version:
+          type: string
+          example: "0.1.0"
+        active_tasks:
+          type: integer
+          example: 2
+
+    # --- Discovery ---
+
+    DiscoverRequest:
+      type: object
+      required: [profile]
+      properties:
+        profile:
+          type: string
+          description: Discovery profile name (must match a file in config/profiles/)
+          example: electrical
+        engine:
+          type: string
+          enum: [yandex, google, both]
+          default: yandex
+        top_n:
+          type: integer
+          default: 30
+          description: Max number of candidates to return
+        probe:
+          type: boolean
+          default: false
+          description: If true, probe each candidate URL for file links and product pages
+
+    DiscoverStatus:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        progress:
+          $ref: "#/components/schemas/Progress"
+        candidates_found:
+          type: integer
+        error:
+          type: string
+
+    # --- Sources ---
+
+    Source:
+      type: object
+      required: [id, url, domain, score, status, mode]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        domain:
+          type: string
+          example: cable.ru
+        score:
+          type: number
+          format: float
+          description: Relevance score (0-100)
+        status:
+          type: string
+          enum: [candidate, approved, rejected]
+        mode:
+          type: string
+          enum: [web, files, unknown]
+          description: |
+            Detected content type:
+            - web: HTML catalogue with product pages
+            - files: downloadable documents (PDF/DOCX/XLSX)
+            - unknown: not yet probed
+        profile:
+          type: string
+          example: electrical
+        probed_at:
+          type: string
+          format: date-time
+        file_links_found:
+          type: integer
+        product_links_found:
+          type: integer
+
+    SourcesList:
+      type: object
+      required: [sources, total]
+      properties:
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Source"
+        total:
+          type: integer
+
+    ApproveRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+
+    # --- Crawl ---
+
+    CrawlRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Starting URL for BFS traversal
+        max_pages:
+          type: integer
+          default: 500
+          description: Maximum pages to visit
+        mode:
+          type: string
+          enum: [web, files, auto]
+          default: auto
+          description: |
+            - web: discover product pages (HTML)
+            - files: discover downloadable files
+            - auto: detect from page content
+        delay_sec:
+          type: number
+          format: float
+          default: 1.0
+          description: Delay between requests (seconds)
+        callback_url:
+          type: string
+          format: uri
+          description: Webhook URL to POST when crawl completes
+
+    CrawlStatus:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        progress:
+          $ref: "#/components/schemas/Progress"
+        pages_visited:
+          type: integer
+        product_urls_found:
+          type: integer
+        file_urls_found:
+          type: integer
+        errors:
+          type: integer
+        rate_limits:
+          type: integer
+        started_at:
+          type: string
+          format: date-time
+        eta_sec:
+          type: integer
+          description: Estimated seconds remaining
+        error:
+          type: string
+
+    # --- Fetch ---
+
+    FetchRequest:
+      type: object
+      required: [urls]
+      properties:
+        urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          maxItems: 500
+          description: URLs to fetch
+        mode:
+          type: string
+          enum: [web, files, auto]
+          default: auto
+        delay_sec:
+          type: number
+          format: float
+          default: 1.0
+        callback_url:
+          type: string
+          format: uri
+          description: Webhook URL to POST when fetch completes
+
+    FetchResults:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        progress:
+          $ref: "#/components/schemas/Progress"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/FetchResult"
+
+    FetchResult:
+      type: object
+      required: [url, status]
+      properties:
+        url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum: [ok, error, skipped]
+        content_type:
+          type: string
+          enum: [html, pdf, docx, xlsx, other]
+        file_path:
+          type: string
+          description: Path to downloaded file (for files mode)
+        cleaned_html:
+          type: string
+          description: Cleaned HTML content (for web mode)
+        size_bytes:
+          type: integer
+        error:
+          type: string
+
+    # --- Clean HTML ---
+
+    CleanHtmlRequest:
+      type: object
+      required: [html]
+      properties:
+        html:
+          type: string
+          description: Raw HTML to clean
+        url:
+          type: string
+          format: uri
+          description: Source URL (used for context-aware filtering)
+
+    CleanHtmlResponse:
+      type: object
+      required: [cleaned_html]
+      properties:
+        cleaned_html:
+          type: string
+        removed_elements:
+          type: integer
+          description: Number of elements removed
+        original_size:
+          type: integer
+        cleaned_size:
+          type: integer
+
+    # --- Common ---
+
+    TaskCreated:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [accepted]
+
+    TaskStatus:
+      type: string
+      enum: [accepted, running, completed, failed]
+
+    Progress:
+      type: object
+      properties:
+        processed:
+          type: integer
+        total:
+          type: integer
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        detail:
+          type: string

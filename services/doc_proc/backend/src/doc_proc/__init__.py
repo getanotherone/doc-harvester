@@ -1,0 +1,1 @@
+"""DocProc — Document Processing Microservice."""
