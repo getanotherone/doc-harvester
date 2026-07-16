@@ -3,8 +3,8 @@
 ## Summary
 
 Phase 0 establishes one recoverable, testable repository layout before further
-architecture work. Repository-side stabilization is complete; backup evidence remains an
-operator gate because backups outside this repository cannot be proved by source code.
+architecture work. Phase 0 was completed on 2026-07-16 after the repository bundle was
+verified and restore-tested.
 
 ## Background
 
@@ -75,5 +75,26 @@ result, and a restore-test result. Never record credentials or private download 
 | No nested repository | Passed | Repository audit found only the root `.git`. |
 | Integration contracts | Passed | `tests/test_cli.py` and `services/doc_proc/tests/test_pipeline/test_integration.py`. |
 | Complete current test run | Passed | Ruff passed; 81 standalone and 107 DocProc tests passed on 2026-07-15. |
-| Repository backup and restore | Manual gate | Evidence must refer to an external backup location. |
+| Repository backup and restore | Passed | Bundle verification and a clean restore at `d4d5089` passed on 2026-07-16. |
 | Yandex Disk backup and restore | Not required | The owner confirmed on 2026-07-16 that this data is retired and will never be used again. |
+
+## Sanitized backup evidence (2026-07-16)
+
+| Field | Result |
+|---|---|
+| Backup type | Complete Git bundle (`--all`) |
+| Backup storage | Local backup folder outside the repository; off-device copy recommended |
+| Backed-up commit | `d4d5089` |
+| Bundle size | 269 KiB |
+| SHA-256 | `bbc38db185689f046cdb31a05881772bd097f234b6697e2fa55f7a70dec56718` |
+| `git bundle verify` | Passed; complete history |
+| Restore clone | Passed |
+| Restored `HEAD` | `d4d5089` |
+| Restored working tree | Clean |
+| Required-file check | Passed |
+| Secrets/private URLs recorded | No |
+
+The bundle is currently on the same Mac, so it protects against accidental repository
+deletion but not loss of the computer or its internal storage. Copying the bundle to an
+encrypted external or cloud backup location is recommended operational hardening, but is
+not a blocker for this phase.

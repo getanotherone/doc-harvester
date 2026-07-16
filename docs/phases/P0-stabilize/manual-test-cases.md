@@ -57,7 +57,8 @@
 | **3** | Record sanitized evidence. | Date, backup medium/category, bundle verification, restore outcome, and commit ID are recorded without tokens or private URLs. |
 
 - **Postconditions:** Temporary restore copies may be removed after evidence is recorded.
-- **Current status:** Manual gate; not yet evidenced in this repository.
+- **Current status:** Passed on 2026-07-16. Bundle verification reported complete history;
+  the restored repository was clean at `d4d5089`, and required files were present.
 
 ---
 
