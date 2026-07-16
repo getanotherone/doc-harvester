@@ -6,6 +6,10 @@ reviewed, and previewed locally before an external API call changes content.
 The same batch workflow supports local output, Yandex Wiki, Confluence Cloud, Notion, and
 installed third-party publishers.
 
+For a first-time Notion setup, follow the step-by-step
+[Notion dry-run guide](notion-dry-run.md). It starts with a read-only connection test and
+keeps the real write test separate.
+
 ## Configuration
 
 1. Copy `config/wiki_publish_map.example.json` to `config/wiki_publish_map.json`.

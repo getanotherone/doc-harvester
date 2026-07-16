@@ -14,6 +14,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from chunker import chunk_units_v2
+from doc_harvester.security import sanitize_text_for_logging, sanitize_url_for_logging
 from extractors import extract_html_string_to_units
 from pdf_extractor_v2 import download_pdf_from_yandex
 from quality_eval import evaluate_quality_for_document
@@ -308,7 +309,10 @@ def retry(func, attempts: int = 3, delay_sec: float = 1.5):
             if attempt == attempts:
                 break
             sleep_for = delay_sec * attempt
-            print(f"Retry {attempt}/{attempts} after error: {error}")
+            print(
+                f"Retry {attempt}/{attempts} after error: "
+                f"{sanitize_text_for_logging(error)}"
+            )
             time.sleep(sleep_for)
     raise last_error
 
@@ -430,7 +434,10 @@ def extract_links(page_url: str) -> List[str]:
             response.raise_for_status()
             html = response.text
         except Exception as error:
-            print(f"SKIP page crawl failed: {current} -> {error}")
+            print(
+                f"SKIP page crawl failed: {sanitize_url_for_logging(current)} -> "
+                f"{sanitize_text_for_logging(error)}"
+            )
             continue
 
         soup = BeautifulSoup(html, "html.parser")
@@ -478,7 +485,8 @@ def extract_links(page_url: str) -> List[str]:
         dropped += 1
 
     print(
-        f"Crawl summary for {page_url}: pages={len(visited_pages)}, "
+        f"Crawl summary for {sanitize_url_for_logging(page_url)}: "
+        f"pages={len(visited_pages)}, "
         f"file_candidates={len(file_links)}, kept={len(result)}, "
         f"maybe_kept={maybe_kept}, dropped={dropped}"
     )
@@ -569,7 +577,7 @@ def ingest_page(page_url: str, disk_folder: str) -> Dict[str, Any]:
         if link in processed:
             doc_result["status"] = "skipped_processed"
             doc_result["finished_at"] = datetime.utcnow().isoformat()
-            print(f"SKIP (processed): {link}")
+            print(f"SKIP (processed): {sanitize_url_for_logging(link)}")
             continue
 
         if storage and storage.exists(disk_path):
@@ -637,7 +645,7 @@ def ingest_page(page_url: str, disk_folder: str) -> Dict[str, Any]:
             doc_result["status"] = "failed"
             doc_result["error"] = str(error)
             doc_result["finished_at"] = datetime.utcnow().isoformat()
-            print(f"FAILED: {filename} -> {error}")
+            print(f"FAILED: {filename} -> {sanitize_text_for_logging(error)}")
 
         finally:
             # Clean up temp file if it wasn't moved to local store
@@ -778,6 +786,7 @@ def _fetch_page_html(url: str, spa_mode: bool = False) -> FetchResult:
     from browser import browser_fetch, browser_fetch_rendered, _Rate429, _Http404, _CaptchaDetected
 
     captcha_consecutive = getattr(_fetch_page_html, "_captcha_consecutive", 0)
+    log_url = sanitize_url_for_logging(url)
 
     for attempt in range(1, 4):
         try:
@@ -798,7 +807,7 @@ def _fetch_page_html(url: str, spa_mode: bool = False) -> FetchResult:
         except _CaptchaDetected as e:
             captcha_consecutive += 1
             _fetch_page_html._captcha_consecutive = captcha_consecutive
-            print(f"  CAPTCHA detected on {url} ({captcha_consecutive} consecutive)")
+            print(f"  CAPTCHA detected on {log_url} ({captcha_consecutive} consecutive)")
             if captcha_consecutive >= 3:
                 raise CaptchaBlockedError(
                     f"CAPTCHA on {captcha_consecutive} consecutive pages — session expired, aborting"
@@ -806,12 +815,12 @@ def _fetch_page_html(url: str, spa_mode: bool = False) -> FetchResult:
             return FetchResult(None)
         except _Rate429:
             wait = min(30 * attempt, 90)
-            print(f"  429 rate-limited on {url}, waiting {wait}s (attempt {attempt}/3)")
+            print(f"  429 rate-limited on {log_url}, waiting {wait}s (attempt {attempt}/3)")
             time.sleep(wait)
         except Exception as error:
-            print(f"SKIP page fetch failed: {url} -> {error}")
+            print(f"SKIP page fetch failed: {log_url} -> {sanitize_text_for_logging(error)}")
             return FetchResult(None)
-    raise RateLimitError(f"429 after 3 retries on {url}")
+    raise RateLimitError(f"429 after 3 retries on {log_url}")
 
 
 def _is_under_root_path(root_url: str, candidate_url: str) -> bool:
@@ -1014,7 +1023,7 @@ def ingest_web(root_url: str, disk_folder: str, resume_urls=None, batch_size=0,
         product_pages = resume_urls
         print(f"Resumed {len(product_pages)} URLs from previous manifest (discovery skipped)")
     else:
-        print(f"Discovering pages from {root_url}...")
+        print(f"Discovering pages from {sanitize_url_for_logging(root_url)}...")
         product_pages = _discover_web_urls(root_url)
 
     manifest: Dict[str, Any] = {
@@ -1058,7 +1067,10 @@ def ingest_web(root_url: str, disk_folder: str, resume_urls=None, batch_size=0,
             doc_result["status"] = "skipped_processed"
             doc_result["finished_at"] = datetime.utcnow().isoformat()
             counts["skipped"] += 1
-            print(f"[{idx}/{total_to_process}] SKIP (processed): {page_url}")
+            print(
+                f"[{idx}/{total_to_process}] SKIP (processed): "
+                f"{sanitize_url_for_logging(page_url)}"
+            )
             continue
 
         if page_url in dead_urls:
@@ -1269,7 +1281,10 @@ def ingest_web(root_url: str, disk_folder: str, resume_urls=None, batch_size=0,
             doc_result["error"] = str(error)
             doc_result["finished_at"] = datetime.utcnow().isoformat()
             counts["failed"] += 1
-            print(f"[{idx}/{total_to_process}] FAILED: {document_id} -> {error}")
+            print(
+                f"[{idx}/{total_to_process}] FAILED: {document_id} -> "
+                f"{sanitize_text_for_logging(error)}"
+            )
 
         time.sleep(WEB_CRAWL_DELAY_SEC)
 
@@ -1512,7 +1527,7 @@ def _upload_single_zip(
             _mark_entries_uploaded(local_base, entries, uploaded_set)
         return {"uploaded": total, "failed": 0, "docs_done": total}
     except Exception as e:
-        print(f"Upload FAILED: {zip_name} -> {e}")
+        print(f"Upload FAILED: {zip_name} -> {sanitize_text_for_logging(e)}")
         os.remove(zip_path)
         return {"uploaded": 0, "failed": total, "docs_done": 0}
 
@@ -1602,7 +1617,7 @@ def _upload_large_dir(dir_path: str, disk_folder: str, yd) -> Dict[str, Any]:
                 uploaded_files.add(fname)
             save_json(tracker_path, sorted(uploaded_files))
         except Exception as e:
-            print(f"Part {part_idx} FAILED: {e}")
+            print(f"Part {part_idx} FAILED: {sanitize_text_for_logging(e)}")
             results["failed"] += len(chunk_files)
         finally:
             if os.path.exists(zip_path):
@@ -1816,7 +1831,10 @@ if __name__ == "__main__":
             source_name = sanitize_domain(get_domain_name(source_url))
             disk_folder = f"/datasets/specs/{source_name}/{today}"
 
-            print(f"\n=== Processing source ({mode}): {source_url} ===")
+            print(
+                f"\n=== Processing source ({mode}): "
+                f"{sanitize_url_for_logging(source_url)} ==="
+            )
             if mode == "web":
                 ingest_web(source_url, disk_folder)
             else:
