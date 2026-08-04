@@ -48,6 +48,8 @@ flag with the corresponding name takes precedence.
 | `DOC_HARVESTER_FETCH_ROOT` | `.` | `--root`; permitted local-source root |
 | `DOC_HARVESTER_MAX_FETCH_BYTES` | `52428800` | `--max-bytes`; maximum fetched bytes |
 | `DOC_HARVESTER_HTTP_TIMEOUT` | `30` | `--timeout`; positive HTTP timeout in seconds |
+| `DOC_HARVESTER_MAX_MANIFEST_BYTES` | `5242880` | `--max-manifest-bytes`; processing-manifest bound |
+| `DOC_HARVESTER_MAX_CHUNK_TOKENS` | `800` | `--max-tokens`; absolute processing chunk bound |
 
 The CLI reads exported process environment variables; it does not automatically load
 `.env`. In zsh, load the safe values from a reviewed local file before running commands:
@@ -103,6 +105,19 @@ doc-harvester source fetch https://example.com/guide.pdf \
 An existing fetch output is preserved unless `--overwrite` is supplied. Discovery
 manifests and fetch receipts preserve resource URIs, including query parameters that may
 be required for retrieval; review them before sharing logs or artifacts publicly.
+
+Process a reviewed version-1 manifest into a new local dataset:
+
+```bash
+doc-harvester source process discovery.json \
+  --root . --output /tmp/doc-harvester-dataset --max-tokens 800
+```
+
+Processing currently supports plain text, Markdown, HTML, XHTML, and XML. PDF, office,
+spreadsheet, image, and other binary formats are reported as skipped. The destination must
+not already exist; the command stages the complete report/documents/chunks beside it and
+publishes the directory atomically. Original fetched bytes are not saved. A mixed dataset
+is still published for review, while any failed resource makes the command return non-zero.
 
 ## Crawl controls
 

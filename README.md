@@ -58,6 +58,9 @@ doc-harvester source discover sitemap https://example.com/sitemap.xml \
 # Fetch one selected resource into an explicit file
 doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
 
+# Process a reviewed manifest into a new local text/HTML chunk dataset
+doc-harvester source process discovery.json --root . --output /tmp/dataset
+
 # Crawl locally without uploading
 doc-harvester crawl https://example.com/catalog/ --no-upload
 

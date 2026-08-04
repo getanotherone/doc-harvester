@@ -20,6 +20,7 @@ DEFAULT_MAX_SITEMAPS = 20
 DEFAULT_MAX_XML_BYTES = 10 * 1024 * 1024
 DEFAULT_MAX_FETCH_BYTES = 50 * 1024 * 1024
 DEFAULT_HTTP_TIMEOUT_SECONDS = 30.0
+DEFAULT_MAX_CHUNK_TOKENS = 800
 
 
 def _positive_int(value: str) -> int:
@@ -150,6 +151,54 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
         "--overwrite", action="store_true", help="Replace an existing output atomically"
     )
     fetch.set_defaults(handler=_run_fetch)
+
+    process = source_commands.add_parser(
+        "process", help="Process a version-1 manifest into a new local chunk dataset"
+    )
+    process.add_argument("manifest", help="Version-1 discovery manifest JSON file")
+    process.add_argument("--output", required=True, help="New destination dataset directory")
+    process.add_argument(
+        "--root",
+        default=os.environ.get("DOC_HARVESTER_FETCH_ROOT", "."),
+        help="Configured root for local manifest resources",
+    )
+    process.add_argument(
+        "--limit",
+        type=_positive_int,
+        default=_environment_default("DOC_HARVESTER_DISCOVERY_LIMIT", DEFAULT_DISCOVERY_LIMIT),
+        help="Maximum manifest resources to process (default: 100)",
+    )
+    process.add_argument(
+        "--max-manifest-bytes",
+        type=_positive_int,
+        default=_environment_default("DOC_HARVESTER_MAX_MANIFEST_BYTES", 5 * 1024 * 1024),
+        help="Maximum manifest file bytes (default: 5242880)",
+    )
+    process.add_argument(
+        "--max-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_FETCH_BYTES", DEFAULT_MAX_FETCH_BYTES
+        ),
+        help="Maximum bytes accepted for each resource (default: 52428800)",
+    )
+    process.add_argument(
+        "--timeout",
+        type=_positive_float,
+        default=_environment_default(
+            "DOC_HARVESTER_HTTP_TIMEOUT", DEFAULT_HTTP_TIMEOUT_SECONDS
+        ),
+        help="HTTP timeout in seconds (default: 30)",
+    )
+    process.add_argument(
+        "--max-tokens",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_CHUNK_TOKENS", DEFAULT_MAX_CHUNK_TOKENS
+        ),
+        help="Absolute chunk token bound (default: 800)",
+    )
+    process.set_defaults(handler=_run_process)
 
 
 def _resource_payload(resource: ResourceRef) -> dict[str, object]:
@@ -284,3 +333,39 @@ def _run_fetch(args: argparse.Namespace) -> int:
         print(f"source fetch failed: {error}", file=sys.stderr)
         return 1
     return 0
+
+
+def _run_process(args: argparse.Namespace) -> int:
+    from doc_harvester.manifest_processing import (
+        ManifestValidationError,
+        process_manifest,
+    )
+
+    try:
+        report = process_manifest(
+            args.manifest,
+            args.output,
+            root=args.root,
+            limit=args.limit,
+            max_manifest_bytes=args.max_manifest_bytes,
+            max_fetch_bytes=args.max_bytes,
+            timeout_seconds=args.timeout,
+            max_tokens=args.max_tokens,
+        )
+    except (ManifestValidationError, FetchError, OSError, ValueError) as error:
+        print(f"source processing failed: {error}", file=sys.stderr)
+        return 1
+    summary = {
+        key: report[key]
+        for key in (
+            "schema_version",
+            "status",
+            "selected_count",
+            "processed_count",
+            "skipped_count",
+            "failed_count",
+        )
+    }
+    summary["output"] = str(Path(args.output))
+    _emit_json(summary)
+    return 1 if report["failed_count"] or report["processed_count"] == 0 else 0

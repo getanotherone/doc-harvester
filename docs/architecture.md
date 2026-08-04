@@ -43,6 +43,10 @@ excluded from Git.
   the core discovery contract.
 - `doc_harvester.fetchers` provides bounded HTTP and root-confined local-file
   implementations of the core fetch contract.
+- `doc_harvester.extractors` provides neutral plain-text/Markdown and static HTML/XML
+  implementations of the core extraction contract.
+- `doc_harvester.chunkers` provides the first structure-aware implementation of the core
+  chunking contract.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
 - `api/` exposes asynchronous task endpoints around standalone operations.
 - `services/doc_proc/` owns its database, queue, storage, embedding, and parsing concerns.
@@ -72,6 +76,11 @@ The credential-free discovery and fetch adapters are exposed through an additive
 CLI group. They do not replace the flat scraper's legacy crawl or search orchestration.
 Sitemap discovery follows sitemap declarations and indexes; it is not an HTML crawler and
 does not apply robots allow/disallow rules to later page requests.
+
+`source process` is the first manifest-driven universal processing path. It stages a new
+local dataset containing normalized blocks, chunks, and a per-resource report, then
+publishes that directory atomically. It does not save originals or support binary document
+formats yet; the legacy scraper and DocProc retain their existing PDF/office capabilities.
 
 ## Reliability controls
 

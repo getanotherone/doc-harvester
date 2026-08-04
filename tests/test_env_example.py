@@ -67,6 +67,8 @@ def test_root_env_example_covers_the_public_standalone_surface():
         "DOC_HARVESTER_FETCH_ROOT",
         "DOC_HARVESTER_MAX_FETCH_BYTES",
         "DOC_HARVESTER_HTTP_TIMEOUT",
+        "DOC_HARVESTER_MAX_MANIFEST_BYTES",
+        "DOC_HARVESTER_MAX_CHUNK_TOKENS",
         "SCRAPPER_API_KEY",
         "S3_BUCKET",
         "NOTION_TOKEN",
@@ -89,4 +91,3 @@ def test_root_env_example_does_not_duplicate_docproc_service_configuration():
     assert "REDIS_URL" not in values
     assert "MINIO_ENDPOINT" not in values
     assert "EMBEDDING_PROVIDER" not in values
-
