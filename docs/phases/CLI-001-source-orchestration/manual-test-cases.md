@@ -11,7 +11,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `CLI-001-TC-03` | Local source fetch | Critical | Passed locally |
 | `CLI-001-TC-04` | HTTP source fetch | High | Passed by automation |
 | `CLI-001-TC-05` | Write and configuration safeguards | Critical | Passed by automation |
-| `CLI-001-TC-06` | Backward compatibility and complete validation | Critical | In progress |
+| `CLI-001-TC-06` | Backward compatibility and complete validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -199,12 +199,13 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** In progress
+- **Status:** Passed
 - **Executed:** 2026-08-04
 - **Tester:** Automation
 - **Actual Result:** Legacy parsing passed; Ruff, 123 standalone tests, 107 DocProc tests,
-  wheel contents/import, CLI artifact smoke test, and Gitleaks scans passed. PR CI remains.
-- **Evidence:** Local validation output; PR to be assigned
+  wheel contents/import, CLI artifact smoke test, and Gitleaks scans passed. PR standalone
+  3.11/3.12, DocProc, secrets, and CodeQL checks passed.
+- **Evidence:** Local validation output; [PR #10](https://github.com/getanotherone/doc-harvester/pull/10)
 - **Issue:** Not applicable
 
 ## Automated coverage references
@@ -223,4 +224,4 @@ Related task summary: [task-summary.md](task-summary.md)
 - [x] Positive, negative, boundary, filesystem, and privacy cases are included.
 - [x] Remote behavior is reproducible with disposable localhost services.
 - [x] Destructive behavior is limited to explicit overwrite of disposable output.
-- [ ] Execution records and public evidence will be added after implementation.
+- [x] Execution records and public evidence are included.

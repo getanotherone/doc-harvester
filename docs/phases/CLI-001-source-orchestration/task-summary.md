@@ -5,11 +5,12 @@
 | Field | Value |
 |---|---|
 | Phase ID | `CLI-001` |
-| Status | In validation |
+| Status | Complete |
 | Owner | Repository maintainer |
 | Started | 2026-08-04 |
+| Completed | 2026-08-04 |
 | Component | `doc_harvester.cli`, discovery and fetch adapters |
-| Related issue / PR | To be assigned |
+| Related issue / PR | [#10](https://github.com/getanotherone/doc-harvester/pull/10) |
 | Manual tests | [manual-test-cases.md](manual-test-cases.md) |
 | Operator documentation | [Configuration](../../configuration.md), [Providers](../../providers.md) |
 
@@ -189,8 +190,9 @@ Local verification:
 - Ruff, diff validation, wheel contents/import, CLI artifact smoke test, and Gitleaks
   complete-history/public-tree scans passed.
 - Real local manual discovery/fetch smoke test produced and byte-compared a README copy.
-
-Pull-request CI and CodeQL evidence remains pending.
+- PR #10 standalone 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
+- The CI portability failure found on the first run was resolved with deterministic
+  Markdown media types and dedicated cross-platform regression tests.
 
 ## Decisions and open questions
 
