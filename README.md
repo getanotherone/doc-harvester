@@ -121,6 +121,11 @@ extraction and chunking. Public storage and publisher contracts are available un
 `doc_harvester.storage` and `doc_harvester.publishers`. S3 support is installed with
 `pip install -e '.[s3]'`; documentation automation uses `pip install -e '.[wiki]'`.
 
+Provider-neutral contracts for the complete pipeline are available under
+`doc_harvester.core`: `DiscoveryProvider`, `Crawler`, `Fetcher`, `Extractor`, `Chunker`,
+`MetadataEnricher`, `QualityGate`, `StorageBackend`, and `Publisher`. Concrete Yandex and
+other vendor adapters are not imported by this core package.
+
 ## Development
 
 ```bash

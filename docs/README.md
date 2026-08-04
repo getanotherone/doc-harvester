@@ -6,6 +6,8 @@
 - [P0 manual test cases](phases/P0-stabilize/manual-test-cases.md)
 - [P1 — Sanitize](phases/P1-sanitize/task-summary.md)
 - [P1 manual test cases](phases/P1-sanitize/manual-test-cases.md)
+- [CORE-001 — Universal core](phases/CORE-001-universal-core/task-summary.md)
+- [CORE-001 manual test cases](phases/CORE-001-universal-core/manual-test-cases.md)
 
 ## Operations and security
 

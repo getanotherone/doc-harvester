@@ -3,6 +3,33 @@
 Provider adapters keep extraction and chunking independent from infrastructure choices.
 Credentials are read only when their provider is selected.
 
+## Universal core
+
+All pipeline extension points and portable data models are available from
+`doc_harvester.core`:
+
+```python
+from doc_harvester.core import (
+    Chunker,
+    Crawler,
+    DiscoveryProvider,
+    Extractor,
+    Fetcher,
+    MetadataEnricher,
+    Publisher,
+    QualityGate,
+    StorageBackend,
+)
+```
+
+The core package has no provider SDK imports and performs no network or credential loading
+at import time. Concrete implementations can target one stage without inheriting from a
+Yandex-, cloud-, database-, or file-format-specific base class.
+
+The initial interface release is synchronous. Existing standalone and DocProc
+implementations will adopt the contracts incrementally; this phase does not replace their
+working internal models or orchestration.
+
 ## Storage
 
 All storage adapters implement `StorageProvider`:
