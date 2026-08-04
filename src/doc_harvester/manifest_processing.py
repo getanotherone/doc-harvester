@@ -158,6 +158,11 @@ def process_manifest(
     max_pdf_pages: int = 1000,
     max_docx_blocks: int = 10_000,
     max_docx_uncompressed_bytes: int = 100 * 1024 * 1024,
+    max_xlsx_sheets: int = 100,
+    max_xlsx_rows: int = 200_000,
+    max_xlsx_cells: int = 2_000_000,
+    max_xlsx_uncompressed_bytes: int = 250 * 1024 * 1024,
+    include_hidden_xlsx_sheets: bool = False,
     fetcher_builder: Callable[..., Any] | None = None,
     extractor_selector: Callable[[FetchedArtifact], Any] | None = None,
 ) -> dict:
@@ -176,6 +181,14 @@ def process_manifest(
         raise ValueError("DOCX max blocks must be at least 1")
     if max_docx_uncompressed_bytes < 1:
         raise ValueError("DOCX max uncompressed bytes must be at least 1")
+    if max_xlsx_sheets < 1:
+        raise ValueError("XLSX max sheets must be at least 1")
+    if max_xlsx_rows < 1:
+        raise ValueError("XLSX max rows must be at least 1")
+    if max_xlsx_cells < 1:
+        raise ValueError("XLSX max cells must be at least 1")
+    if max_xlsx_uncompressed_bytes < 1:
+        raise ValueError("XLSX max uncompressed bytes must be at least 1")
 
     destination = Path(output)
     if destination.exists() or destination.is_symlink():
@@ -212,6 +225,11 @@ def process_manifest(
                         max_pdf_pages=max_pdf_pages,
                         max_docx_blocks=max_docx_blocks,
                         max_docx_uncompressed_bytes=max_docx_uncompressed_bytes,
+                        max_xlsx_sheets=max_xlsx_sheets,
+                        max_xlsx_rows=max_xlsx_rows,
+                        max_xlsx_cells=max_xlsx_cells,
+                        max_xlsx_uncompressed_bytes=max_xlsx_uncompressed_bytes,
+                        include_hidden_xlsx_sheets=include_hidden_xlsx_sheets,
                     )
                 )
                 if extractor is None:

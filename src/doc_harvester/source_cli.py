@@ -24,6 +24,10 @@ DEFAULT_MAX_CHUNK_TOKENS = 800
 DEFAULT_MAX_PDF_PAGES = 1000
 DEFAULT_MAX_DOCX_BLOCKS = 10_000
 DEFAULT_MAX_DOCX_UNCOMPRESSED_BYTES = 100 * 1024 * 1024
+DEFAULT_MAX_XLSX_SHEETS = 100
+DEFAULT_MAX_XLSX_ROWS = 200_000
+DEFAULT_MAX_XLSX_CELLS = 2_000_000
+DEFAULT_MAX_XLSX_UNCOMPRESSED_BYTES = 250 * 1024 * 1024
 
 
 def _positive_int(value: str) -> int:
@@ -226,6 +230,48 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
         ),
         help="Maximum expanded bytes accepted from one DOCX (default: 104857600)",
     )
+    process.add_argument(
+        "--max-xlsx-sheets",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_XLSX_SHEETS", DEFAULT_MAX_XLSX_SHEETS
+        ),
+        help="Maximum worksheets accepted from one XLSX (default: 100)",
+    )
+    process.add_argument(
+        "--max-xlsx-rows",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_XLSX_ROWS", DEFAULT_MAX_XLSX_ROWS
+        ),
+        help="Maximum rows inspected across one XLSX (default: 200000)",
+    )
+    process.add_argument(
+        "--max-xlsx-cells",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_XLSX_CELLS", DEFAULT_MAX_XLSX_CELLS
+        ),
+        help="Maximum cells inspected across one XLSX (default: 2000000)",
+    )
+    process.add_argument(
+        "--max-xlsx-uncompressed-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_XLSX_UNCOMPRESSED_BYTES",
+            DEFAULT_MAX_XLSX_UNCOMPRESSED_BYTES,
+        ),
+        help="Maximum expanded bytes accepted from one XLSX (default: 262144000)",
+    )
+    process.add_argument(
+        "--include-hidden-xlsx-sheets",
+        action=argparse.BooleanOptionalAction,
+        default=os.environ.get("DOC_HARVESTER_XLSX_INCLUDE_HIDDEN", "0")
+        .strip()
+        .lower()
+        in {"1", "true", "yes", "on"},
+        help="Include hidden and very-hidden XLSX worksheets (default: false)",
+    )
     process.set_defaults(handler=_run_process)
 
 
@@ -382,6 +428,11 @@ def _run_process(args: argparse.Namespace) -> int:
             max_pdf_pages=args.max_pdf_pages,
             max_docx_blocks=args.max_docx_blocks,
             max_docx_uncompressed_bytes=args.max_docx_uncompressed_bytes,
+            max_xlsx_sheets=args.max_xlsx_sheets,
+            max_xlsx_rows=args.max_xlsx_rows,
+            max_xlsx_cells=args.max_xlsx_cells,
+            max_xlsx_uncompressed_bytes=args.max_xlsx_uncompressed_bytes,
+            include_hidden_xlsx_sheets=args.include_hidden_xlsx_sheets,
         )
     except (ManifestValidationError, FetchError, OSError, ValueError) as error:
         print(f"source processing failed: {error}", file=sys.stderr)

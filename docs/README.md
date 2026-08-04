@@ -18,6 +18,8 @@
 - [EXTR-001 manual test cases](phases/EXTR-001-pdf/manual-test-cases.md)
 - [EXTR-002 — Structure-aware DOCX extraction](phases/EXTR-002-docx/task-summary.md)
 - [EXTR-002 manual test cases](phases/EXTR-002-docx/manual-test-cases.md)
+- [EXTR-003 — Bounded XLSX extraction](phases/EXTR-003-xlsx/task-summary.md)
+- [EXTR-003 manual test cases](phases/EXTR-003-xlsx/manual-test-cases.md)
 
 ## Operations and security
 

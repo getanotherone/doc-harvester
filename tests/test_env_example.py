@@ -29,6 +29,7 @@ def test_root_env_example_has_universal_safe_defaults():
     assert values["UPLOAD_ENABLED"] == "0"
     assert values["SEARCH_DISCOVERY_ENABLED"] == "0"
     assert values["ELECTRICAL_ONLY"] == "0"
+    assert values["DOC_HARVESTER_XLSX_INCLUDE_HIDDEN"] == "0"
     assert "DOC_HARVESTER_PROFILE" not in values
     assert "change-me" not in EXAMPLE.read_text(encoding="utf-8")
 
@@ -72,6 +73,11 @@ def test_root_env_example_covers_the_public_standalone_surface():
         "DOC_HARVESTER_MAX_PDF_PAGES",
         "DOC_HARVESTER_MAX_DOCX_BLOCKS",
         "DOC_HARVESTER_MAX_DOCX_UNCOMPRESSED_BYTES",
+        "DOC_HARVESTER_MAX_XLSX_SHEETS",
+        "DOC_HARVESTER_MAX_XLSX_ROWS",
+        "DOC_HARVESTER_MAX_XLSX_CELLS",
+        "DOC_HARVESTER_MAX_XLSX_UNCOMPRESSED_BYTES",
+        "DOC_HARVESTER_XLSX_INCLUDE_HIDDEN",
         "SCRAPPER_API_KEY",
         "S3_BUCKET",
         "NOTION_TOKEN",

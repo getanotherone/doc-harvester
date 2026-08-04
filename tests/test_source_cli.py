@@ -64,6 +64,43 @@ def test_parser_exposes_credential_free_source_commands():
     assert sitemap.discovery_mode == "sitemap"
     assert fetch.source_command == "fetch"
     assert process.source_command == "process"
+    assert process.include_hidden_xlsx_sheets is False
+
+
+def test_process_parser_can_include_hidden_xlsx_sheets():
+    args = build_parser().parse_args(
+        [
+            "source",
+            "process",
+            "manifest.json",
+            "--output",
+            "/tmp/dataset",
+            "--include-hidden-xlsx-sheets",
+        ]
+    )
+
+    assert args.include_hidden_xlsx_sheets is True
+
+
+def test_process_parser_hidden_xlsx_environment_default_can_be_overridden(monkeypatch):
+    monkeypatch.setenv("DOC_HARVESTER_XLSX_INCLUDE_HIDDEN", "1")
+
+    enabled = build_parser().parse_args(
+        ["source", "process", "manifest.json", "--output", "/tmp/dataset"]
+    )
+    disabled = build_parser().parse_args(
+        [
+            "source",
+            "process",
+            "manifest.json",
+            "--output",
+            "/tmp/dataset",
+            "--no-include-hidden-xlsx-sheets",
+        ]
+    )
+
+    assert enabled.include_hidden_xlsx_sheets is True
+    assert disabled.include_hidden_xlsx_sheets is False
 
 
 def test_manual_discovery_emits_versioned_manifest(capsys):
