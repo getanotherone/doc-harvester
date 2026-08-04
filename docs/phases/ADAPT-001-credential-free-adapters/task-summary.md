@@ -5,11 +5,12 @@
 | Field | Value |
 |---|---|
 | Phase ID | `ADAPT-001` |
-| Status | In validation |
+| Status | Complete |
 | Owner | Repository maintainer |
 | Started | 2026-08-04 |
+| Completed | 2026-08-04 |
 | Component | `doc_harvester.discovery`, `doc_harvester.fetchers` |
-| Related issue / PR | To be assigned |
+| Related issue / PR | [#8](https://github.com/getanotherone/doc-harvester/pull/8) |
 | Manual tests | [manual-test-cases.md](manual-test-cases.md) |
 | Operator documentation | [Providers](../../providers.md) |
 
@@ -185,9 +186,7 @@ Deferred:
 
 - CLI/profile orchestration, HTML crawling, retries, caching, and authenticated fetchers.
 
-Verification evidence will be recorded after full local and pull-request validation.
-
-Local verification completed:
+Verification evidence:
 
 - Ruff passed.
 - Focused adapter suite: 21 passed.
@@ -195,8 +194,7 @@ Local verification completed:
 - Complete DocProc suite: 107 passed.
 - Wheel build, contents inspection, and artifact import passed.
 - Gitleaks complete-history and public working-tree scans passed.
-
-Pull-request CI and CodeQL evidence remains pending.
+- PR #8 standalone 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
 
 ## Decisions and open questions
 

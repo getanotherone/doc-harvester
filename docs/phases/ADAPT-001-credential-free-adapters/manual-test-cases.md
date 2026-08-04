@@ -11,7 +11,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `ADAPT-001-TC-03` | Malformed and unsafe sitemap handling | Critical | Passed locally |
 | `ADAPT-001-TC-04` | Bounded HTTP fetching | Critical | Passed locally |
 | `ADAPT-001-TC-05` | Root-confined local fetching | Critical | Passed locally |
-| `ADAPT-001-TC-06` | Factories and complete validation | Critical | In progress |
+| `ADAPT-001-TC-06` | Factories and complete validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -194,16 +194,17 @@ Related task summary: [task-summary.md](task-summary.md)
 
 - **Postconditions:** Build and test artifacts remain ignored or temporary.
 - **Test Data:** Repository source only.
-- **Current Status:** In progress
-- **Evidence:** Local Ruff, pytest, wheel, and Gitleaks output; pull-request checks pending.
+- **Current Status:** Passed
+- **Evidence:** Local Ruff, pytest, wheel, and Gitleaks output; [PR #8](https://github.com/getanotherone/doc-harvester/pull/8).
 
 ### Execution record
 
-- **Status:** In progress
+- **Status:** Passed
 - **Executed:** 2026-08-04
 - **Tester:** Automation
 - **Actual Result:** Ruff passed; 21 focused, 106 standalone, and 107 DocProc tests passed;
-  wheel contents/import and both Gitleaks scans passed. Pull-request CI and CodeQL remain.
+  wheel contents/import and both Gitleaks scans passed. PR standalone 3.11/3.12, DocProc,
+  secrets, and CodeQL checks passed.
 - **Issue:** Not applicable
 
 ## Automated coverage references
@@ -221,4 +222,4 @@ Related task summary: [task-summary.md](task-summary.md)
 - [x] Every acceptance criterion links to a manual and automated verification path.
 - [x] Negative, boundary, filesystem, XML, and credential-leak cases are included.
 - [x] Tests use disposable or synthetic data and require no credential.
-- [ ] Full CI evidence will be added before the phase is marked complete.
+- [x] Full CI evidence is linked before the phase is marked complete.
