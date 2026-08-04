@@ -88,13 +88,13 @@ def test_manual_discovery_emits_versioned_manifest(capsys):
             {
                 "uri": "README.md",
                 "source": "manual",
-                "media_type": "",
+                "media_type": "text/markdown",
                 "metadata": {},
             },
             {
                 "uri": "docs/architecture.md",
                 "source": "manual",
-                "media_type": "",
+                "media_type": "text/markdown",
                 "metadata": {},
             },
         ],

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import mimetypes
 from pathlib import PurePosixPath
 from typing import Any, Mapping
 from urllib.parse import unquote, urlsplit
@@ -11,6 +10,7 @@ import requests
 
 from doc_harvester.core import FetchedArtifact, Fetcher, ResourceRef
 from doc_harvester.fetchers.errors import FetchError, FetchTooLargeError, UnsupportedSchemeError
+from doc_harvester.media import guess_media_type
 from doc_harvester.security import sanitize_url_for_logging
 
 
@@ -128,7 +128,7 @@ class HTTPFetcher(Fetcher):
             return content_type
         if resource.media_type:
             return resource.media_type
-        return mimetypes.guess_type(urlsplit(resource.uri).path)[0] or "application/octet-stream"
+        return guess_media_type(urlsplit(resource.uri).path) or "application/octet-stream"
 
     @staticmethod
     def _header(headers: Mapping[str, str], name: str) -> str:

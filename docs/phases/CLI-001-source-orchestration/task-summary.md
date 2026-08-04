@@ -177,13 +177,14 @@ Implemented:
 - Additive `source discover manual`, `source discover sitemap`, and `source fetch` commands.
 - Versioned resource manifests and fetch receipts.
 - Safe fetcher inference, explicit output, overwrite protection, and atomic replacement.
+- Portable Markdown media-type inference across supported operating systems/Python versions.
 - Flag and exported-environment configuration for limits, root, and HTTP timeout.
 - Public help, README, configuration, provider, and manual-test documentation.
 
 Local verification:
 
-- Focused source/adapter/legacy CLI suite: 42 passed.
-- Complete standalone suite: 121 passed.
+- Focused source/adapter/legacy CLI suite: 44 passed.
+- Complete standalone suite: 123 passed.
 - Complete DocProc suite: 107 passed.
 - Ruff, diff validation, wheel contents/import, CLI artifact smoke test, and Gitleaks
   complete-history/public-tree scans passed.

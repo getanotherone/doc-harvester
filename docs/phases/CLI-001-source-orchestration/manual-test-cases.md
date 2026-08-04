@@ -202,7 +202,7 @@ Related task summary: [task-summary.md](task-summary.md)
 - **Status:** In progress
 - **Executed:** 2026-08-04
 - **Tester:** Automation
-- **Actual Result:** Legacy parsing passed; Ruff, 121 standalone tests, 107 DocProc tests,
+- **Actual Result:** Legacy parsing passed; Ruff, 123 standalone tests, 107 DocProc tests,
   wheel contents/import, CLI artifact smoke test, and Gitleaks scans passed. PR CI remains.
 - **Evidence:** Local validation output; PR to be assigned
 - **Issue:** Not applicable

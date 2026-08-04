@@ -119,6 +119,15 @@ def test_local_fetcher_reads_relative_paths_and_file_uris(tmp_path):
     assert relative.metadata == {"bytes": 5}
 
 
+def test_local_fetcher_uses_portable_markdown_media_type(tmp_path):
+    source = tmp_path / "README.md"
+    source.write_text("hello", encoding="utf-8")
+
+    artifact = LocalFileFetcher(tmp_path).fetch(ResourceRef("README.md"))
+
+    assert artifact.media_type == "text/markdown"
+
+
 def test_local_fetcher_confines_paths_to_configured_root(tmp_path):
     root = tmp_path / "root"
     root.mkdir()

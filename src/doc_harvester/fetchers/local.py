@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import mimetypes
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from doc_harvester.core import FetchedArtifact, Fetcher, ResourceRef
 from doc_harvester.fetchers.errors import FetchError, FetchTooLargeError, UnsupportedSchemeError
 from doc_harvester.fetchers.http import DEFAULT_MAX_BYTES
+from doc_harvester.media import guess_media_type
 
 
 class LocalFileFetcher(Fetcher):
@@ -42,7 +42,7 @@ class LocalFileFetcher(Fetcher):
             raise
         except (OSError, RuntimeError) as error:
             raise FetchError(f"local fetch failed: {type(error).__name__}") from None
-        media_type = resource.media_type or mimetypes.guess_type(path.name)[0]
+        media_type = resource.media_type or guess_media_type(path.name)
         return FetchedArtifact(
             resource=resource,
             content=content,
