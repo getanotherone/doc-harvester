@@ -30,6 +30,29 @@ Local storage and publication are safe defaults and require no credentials:
 | `DOC_HARVESTER_PUBLISHER` | `local` | `local`, `yandex-wiki`, `confluence`, `notion`, or an installed plugin |
 | `DOC_HARVESTER_PUBLISH_ROOT` | `published` | Local publisher root |
 
+Credential-free `source` commands use these optional exported environment defaults. A CLI
+flag with the corresponding name takes precedence.
+
+| Variable | Default | CLI flag / effect |
+|---|---:|---|
+| `DOC_HARVESTER_DISCOVERY_LIMIT` | `100` | `--limit`; maximum manifest resources |
+| `DOC_HARVESTER_MAX_SITEMAPS` | `20` | `--max-sitemaps`; sitemap traversal bound |
+| `DOC_HARVESTER_MAX_SITEMAP_BYTES` | `10485760` | `--max-xml-bytes`; HTTP and decoded XML bound |
+| `DOC_HARVESTER_FETCH_ROOT` | `.` | `--root`; permitted local-source root |
+| `DOC_HARVESTER_MAX_FETCH_BYTES` | `52428800` | `--max-bytes`; maximum fetched bytes |
+| `DOC_HARVESTER_HTTP_TIMEOUT` | `30` | `--timeout`; positive HTTP timeout in seconds |
+
+The CLI reads exported process environment variables; it does not automatically load
+`.env`. In zsh, load the safe values from a reviewed local file before running commands:
+
+```bash
+set -a
+source .env
+set +a
+```
+
+Invalid zero, negative, or non-numeric limit values are rejected during argument parsing.
+
 S3-compatible storage uses `S3_BUCKET`, `S3_PREFIX`, `S3_ENDPOINT_URL`, `S3_REGION`,
 `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`. Install its optional SDK with
 `python -m pip install -e '.[s3]'`. AWS S3 can omit `S3_ENDPOINT_URL`; MinIO and other
@@ -45,6 +68,34 @@ Provider destinations are relative to the provider root, bucket prefix, or remot
 namespace. Local adapters reject `..` traversal outside their configured root.
 Documentation publishers do not change remote page permissions. Created pages inherit the
 permissions of their configured space or parent.
+
+## Credential-free source commands
+
+Manual discovery accepts one or more paths or URLs and prints a versioned JSON manifest:
+
+```bash
+doc-harvester source discover manual README.md docs/architecture.md
+```
+
+Sitemap discovery is same-origin and includes `robots.txt` declarations by default:
+
+```bash
+doc-harvester source discover sitemap https://example.com/sitemap.xml \
+  --limit 25 --output discovery.json
+```
+
+Use `--no-robots` or `--allow-cross-origin` only when that behavior is intentional. Fetch
+one reviewed resource into an explicit output file:
+
+```bash
+doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
+doc-harvester source fetch https://example.com/guide.pdf \
+  --output /tmp/guide.pdf --max-bytes 10485760
+```
+
+An existing fetch output is preserved unless `--overwrite` is supplied. Discovery
+manifests and fetch receipts preserve resource URIs, including query parameters that may
+be required for retrieval; review them before sharing logs or artifacts publicly.
 
 ## Crawl controls
 

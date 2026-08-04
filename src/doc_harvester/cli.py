@@ -168,6 +168,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
 
+    from doc_harvester.source_cli import add_source_commands
+
+    add_source_commands(commands)
+
     discover = commands.add_parser("discover", help="Discover domain URLs with Yandex Search API")
     discover.add_argument("domain", help="Domain to search, for example example.com")
     discover.add_argument("--term", action="append", help="Search term; repeat for multiple terms")
