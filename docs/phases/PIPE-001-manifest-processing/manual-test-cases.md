@@ -10,7 +10,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `PIPE-001-TC-02` | Mixed processed, skipped, and failed resources | High | Passed by automation |
 | `PIPE-001-TC-03` | Manifest/output/configuration safeguards | Critical | Passed by automation |
 | `PIPE-001-TC-04` | Structure-aware chunk bound | High | Passed by automation |
-| `PIPE-001-TC-05` | Complete regression and package validation | Critical | In progress |
+| `PIPE-001-TC-05` | Complete regression and package validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -166,12 +166,13 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** In progress
+- **Status:** Passed
 - **Executed:** 2026-08-04
 - **Tester:** Automation
 - **Actual Result:** Ruff, 151 standalone tests, 107 DocProc tests, wheel contents/import,
-  artifact CLI processing smoke, and both Gitleaks scans passed. PR checks remain.
-- **Evidence:** Local validation output; PR to be assigned
+  artifact CLI processing smoke, and both Gitleaks scans passed. PR standalone 3.11/3.12,
+  DocProc, secrets, and CodeQL checks passed.
+- **Evidence:** Local validation output; [PR #12](https://github.com/getanotherone/doc-harvester/pull/12)
 - **Issue:** Not applicable
 
 ## Automated coverage references
@@ -189,4 +190,4 @@ Related task summary: [task-summary.md](task-summary.md)
 - [x] Positive, mixed-result, unsupported, failure, boundary, and atomicity cases are included.
 - [x] Network behavior can be tested through injected fetchers without external access.
 - [x] Destructive overwrite is not part of the command.
-- [ ] Execution records and public evidence will be added after implementation.
+- [x] Execution records and public evidence are included.

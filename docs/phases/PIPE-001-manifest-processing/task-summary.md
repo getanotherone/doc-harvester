@@ -5,11 +5,12 @@
 | Field | Value |
 |---|---|
 | Phase ID | `PIPE-001` |
-| Status | In validation |
+| Status | Complete |
 | Owner | Repository maintainer |
 | Started | 2026-08-04 |
+| Completed | 2026-08-04 |
 | Component | Extractors, chunkers, source CLI orchestration |
-| Related issue / PR | To be assigned |
+| Related issue / PR | [#12](https://github.com/getanotherone/doc-harvester/pull/12) |
 | Manual tests | [manual-test-cases.md](manual-test-cases.md) |
 | Operator documentation | [Configuration](../../configuration.md), [Providers](../../providers.md) |
 
@@ -204,8 +205,7 @@ Local verification:
   Gitleaks complete-history/public-tree scans passed.
 - Real local Markdown/HTML manifest processed two documents into 20 chunks with a complete
   report and expected dataset layout.
-
-Pull-request CI and CodeQL evidence remains pending.
+- PR #12 standalone 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
 
 ## Decisions and open questions
 
