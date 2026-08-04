@@ -1,7 +1,14 @@
 # Configuration
 
-Copy `.env.example` to `.env` for local development. The application does not automatically
-make `.env` safe: never commit it, print it, attach it to an issue, or include it in a build.
+The root `.env.example` is the standalone application's configuration catalogue. It starts
+with credential-free local defaults, groups optional integrations separately, and leaves
+all secrets blank. DocProc is independently deployable and uses
+`services/doc_proc/.env.example`; do not combine its database, Redis, MinIO, worker, and
+embedding settings into the root file.
+
+Copy the root template to `.env` only when file-based local configuration is useful. The
+public CLI reads exported process variables and does not automatically load `.env`. Never
+commit it, print it, attach it to an issue, or include it in a build.
 
 ## Credentials
 
