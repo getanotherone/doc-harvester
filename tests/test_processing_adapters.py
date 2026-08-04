@@ -9,6 +9,7 @@ from doc_harvester.chunkers import (
 )
 from doc_harvester.core import ChunkingOptions, FetchedArtifact, ResourceRef
 from doc_harvester.extractors import (
+    DOCXExtractor,
     HTMLExtractor,
     PDFExtractor,
     TextExtractor,
@@ -119,15 +120,17 @@ def test_structure_aware_chunker_returns_indexed_bounded_chunks():
         chunk.metadata["token_count"] <= 80 or chunk.metadata["oversized"]
         for chunk in chunks
     )
+    assert chunks[0].metadata["page"] == 1
 
 
 def test_processing_adapter_factories_list_and_build_supported_adapters():
-    assert available_extractors() == ("text", "html-xml", "pdf")
+    assert available_extractors() == ("text", "html-xml", "pdf", "docx")
     assert isinstance(create_extractor("xml"), HTMLExtractor)
     assert isinstance(create_extractor("pdf"), PDFExtractor)
+    assert isinstance(create_extractor("docx"), DOCXExtractor)
     assert available_chunkers() == ("structure-aware",)
     assert isinstance(create_chunker("default"), StructureAwareChunker)
     with pytest.raises(ValueError, match="unknown extractor"):
-        create_extractor("docx")
+        create_extractor("xlsx")
     with pytest.raises(ValueError, match="unknown chunker"):
         create_chunker("semantic")

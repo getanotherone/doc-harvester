@@ -156,6 +156,8 @@ def process_manifest(
     timeout_seconds: float = 30.0,
     max_tokens: int = 800,
     max_pdf_pages: int = 1000,
+    max_docx_blocks: int = 10_000,
+    max_docx_uncompressed_bytes: int = 100 * 1024 * 1024,
     fetcher_builder: Callable[..., Any] | None = None,
     extractor_selector: Callable[[FetchedArtifact], Any] | None = None,
 ) -> dict:
@@ -170,6 +172,10 @@ def process_manifest(
         raise ValueError("max tokens must be at least 1")
     if max_pdf_pages < 1:
         raise ValueError("PDF max pages must be at least 1")
+    if max_docx_blocks < 1:
+        raise ValueError("DOCX max blocks must be at least 1")
+    if max_docx_uncompressed_bytes < 1:
+        raise ValueError("DOCX max uncompressed bytes must be at least 1")
 
     destination = Path(output)
     if destination.exists() or destination.is_symlink():
@@ -201,7 +207,12 @@ def process_manifest(
                 extractor = (
                     choose_extractor(artifact)
                     if extractor_selector is not None
-                    else select_extractor(artifact, max_pdf_pages=max_pdf_pages)
+                    else select_extractor(
+                        artifact,
+                        max_pdf_pages=max_pdf_pages,
+                        max_docx_blocks=max_docx_blocks,
+                        max_docx_uncompressed_bytes=max_docx_uncompressed_bytes,
+                    )
                 )
                 if extractor is None:
                     outcomes.append(

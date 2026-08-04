@@ -43,8 +43,8 @@ excluded from Git.
   the core discovery contract.
 - `doc_harvester.fetchers` provides bounded HTTP and root-confined local-file
   implementations of the core fetch contract.
-- `doc_harvester.extractors` provides neutral plain-text/Markdown, static HTML/XML, and
-  digital-text PDF implementations of the core extraction contract.
+- `doc_harvester.extractors` provides neutral plain-text/Markdown, static HTML/XML,
+  digital-text PDF, and structure-aware DOCX implementations of the core extraction contract.
 - `doc_harvester.chunkers` provides the first structure-aware implementation of the core
   chunking contract.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
@@ -81,7 +81,8 @@ does not apply robots allow/disallow rules to later page requests.
 local dataset containing normalized blocks, chunks, and a per-resource report, then
 publishes that directory atomically. It does not save originals. It supports embedded-text
 PDFs without external OCR; textless PDFs are marked `ocr_required`. The legacy scraper and
-DocProc retain their broader OCR/office capabilities.
+DocProc retain their broader OCR/office capabilities. The universal DOCX adapter reads
+bounded OOXML main-body content without extracting archives to disk or inventing pages.
 
 ## Reliability controls
 

@@ -16,6 +16,8 @@
 - [PIPE-001 manual test cases](phases/PIPE-001-manifest-processing/manual-test-cases.md)
 - [EXTR-001 — Digital-text PDF extraction](phases/EXTR-001-pdf/task-summary.md)
 - [EXTR-001 manual test cases](phases/EXTR-001-pdf/manual-test-cases.md)
+- [EXTR-002 — Structure-aware DOCX extraction](phases/EXTR-002-docx/task-summary.md)
+- [EXTR-002 manual test cases](phases/EXTR-002-docx/manual-test-cases.md)
 
 ## Operations and security
 
