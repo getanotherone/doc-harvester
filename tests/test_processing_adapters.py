@@ -10,6 +10,7 @@ from doc_harvester.chunkers import (
 from doc_harvester.core import ChunkingOptions, FetchedArtifact, ResourceRef
 from doc_harvester.extractors import (
     HTMLExtractor,
+    PDFExtractor,
     TextExtractor,
     available_extractors,
     create_extractor,
@@ -88,10 +89,10 @@ def test_xml_extractor_falls_back_to_custom_element_text():
     assert [block.text for block in document.blocks] == ["Useful XML content"]
 
 
-def test_extractor_selection_rejects_unsupported_binary_artifact():
+def test_extractor_selection_accepts_pdf_but_text_extractor_rejects_it():
     source = artifact(b"%PDF", filename="guide.pdf", media_type="application/pdf")
 
-    assert select_extractor(source) is None
+    assert isinstance(select_extractor(source), PDFExtractor)
     with pytest.raises(ValueError, match="does not support"):
         TextExtractor().extract(source)
 
@@ -121,11 +122,12 @@ def test_structure_aware_chunker_returns_indexed_bounded_chunks():
 
 
 def test_processing_adapter_factories_list_and_build_supported_adapters():
-    assert available_extractors() == ("text", "html-xml")
+    assert available_extractors() == ("text", "html-xml", "pdf")
     assert isinstance(create_extractor("xml"), HTMLExtractor)
+    assert isinstance(create_extractor("pdf"), PDFExtractor)
     assert available_chunkers() == ("structure-aware",)
     assert isinstance(create_chunker("default"), StructureAwareChunker)
     with pytest.raises(ValueError, match="unknown extractor"):
-        create_extractor("pdf")
+        create_extractor("docx")
     with pytest.raises(ValueError, match="unknown chunker"):
         create_chunker("semantic")

@@ -86,6 +86,7 @@ Built-in processing adapters implement the universal core contracts:
 |---|---|---|
 | Extract | `text` | UTF-8-compatible plain text and Markdown paragraphs |
 | Extract | `html-xml` | Neutral static HTML/XHTML/XML structural content |
+| Extract | `pdf` | Embedded PDF text with page metadata; no OCR or source persistence |
 | Chunk | `structure-aware` | Paragraph, section, table, and normative-aware token bounds |
 
 ```python
@@ -96,7 +97,7 @@ from doc_harvester.extractors import select_extractor
 The `source process` command connects manifests, automatic HTTP/local fetching, extractor
 selection, and structure-aware chunking. It writes normalized JSON locally and does not
 persist original bytes, upload, publish, or silently treat unsupported binary formats as
-text.
+text. Textless PDFs are reported as requiring OCR rather than invoking external binaries.
 
 ## Storage
 

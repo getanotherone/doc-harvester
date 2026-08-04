@@ -155,6 +155,7 @@ def process_manifest(
     max_fetch_bytes: int = 50 * 1024 * 1024,
     timeout_seconds: float = 30.0,
     max_tokens: int = 800,
+    max_pdf_pages: int = 1000,
     fetcher_builder: Callable[..., Any] | None = None,
     extractor_selector: Callable[[FetchedArtifact], Any] | None = None,
 ) -> dict:
@@ -167,6 +168,8 @@ def process_manifest(
         raise ValueError("HTTP timeout must be positive")
     if max_tokens < 1:
         raise ValueError("max tokens must be at least 1")
+    if max_pdf_pages < 1:
+        raise ValueError("PDF max pages must be at least 1")
 
     destination = Path(output)
     if destination.exists() or destination.is_symlink():
@@ -195,7 +198,11 @@ def process_manifest(
                 else:
                     options["root"] = root
                 artifact = build_fetcher(fetcher_name, **options).fetch(resource)
-                extractor = choose_extractor(artifact)
+                extractor = (
+                    choose_extractor(artifact)
+                    if extractor_selector is not None
+                    else select_extractor(artifact, max_pdf_pages=max_pdf_pages)
+                )
                 if extractor is None:
                     outcomes.append(
                         {
@@ -209,6 +216,18 @@ def process_manifest(
                     continue
                 document = extractor.extract(artifact)
                 if not document.blocks:
+                    if document.metadata.get("ocr_required"):
+                        outcomes.append(
+                            {
+                                **base_outcome,
+                                "status": "skipped",
+                                "reason": "ocr_required",
+                                "media_type": artifact.media_type,
+                                "filename": artifact.filename,
+                                "pages": document.metadata.get("page_count", 0),
+                            }
+                        )
+                        continue
                     raise ValueError("extraction produced no content blocks")
                 chunks = list(
                     chunker.chunk(

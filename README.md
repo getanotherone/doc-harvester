@@ -27,8 +27,8 @@ scraper for every website or document type.
 
 ## Quick Start
 
-Requirements: Python 3.11+, Tesseract, and Poppler. OCR binaries are optional for the
-offline demo but required for image-only PDFs.
+Requirements: Python 3.11+. Tesseract and Poppler are optional legacy-workflow dependencies
+and are not required for the demo or universal digital-text PDF processing.
 
 ```bash
 git clone https://github.com/getanotherone/doc-harvester.git
@@ -58,7 +58,7 @@ doc-harvester source discover sitemap https://example.com/sitemap.xml \
 # Fetch one selected resource into an explicit file
 doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
 
-# Process a reviewed manifest into a new local text/HTML chunk dataset
+# Process a reviewed manifest into a new local text/HTML/XML/PDF chunk dataset
 doc-harvester source process discovery.json --root . --output /tmp/dataset
 
 # Crawl locally without uploading

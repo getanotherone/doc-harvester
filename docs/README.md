@@ -14,6 +14,8 @@
 - [CLI-001 manual test cases](phases/CLI-001-source-orchestration/manual-test-cases.md)
 - [PIPE-001 — Manifest-driven local processing](phases/PIPE-001-manifest-processing/task-summary.md)
 - [PIPE-001 manual test cases](phases/PIPE-001-manifest-processing/manual-test-cases.md)
+- [EXTR-001 — Digital-text PDF extraction](phases/EXTR-001-pdf/task-summary.md)
+- [EXTR-001 manual test cases](phases/EXTR-001-pdf/manual-test-cases.md)
 
 ## Operations and security
 

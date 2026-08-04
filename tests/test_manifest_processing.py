@@ -13,6 +13,7 @@ from doc_harvester.manifest_processing import (
     load_manifest,
     process_manifest,
 )
+from tests.pdf_fixture import build_text_pdf
 
 
 def write_manifest(path: Path, resources, **overrides):
@@ -95,13 +96,17 @@ def test_process_manifest_writes_local_text_and_html_dataset(tmp_path):
 def test_process_manifest_preserves_mixed_outcomes(tmp_path):
     resources = [
         {"uri": "https://example.com/good.txt", "source": "manual"},
-        {"uri": "https://example.com/guide.pdf", "source": "manual"},
+        {"uri": "https://example.com/unsupported.docx", "source": "manual"},
         {"uri": "https://example.com/fail.txt", "source": "manual"},
     ]
     manifest = write_manifest(tmp_path / "manifest.json", resources)
     mapping = {
         resources[0]["uri"]: (b"Useful technical text.", "text/plain", "good.txt"),
-        resources[1]["uri"]: (b"%PDF", "application/pdf", "guide.pdf"),
+        resources[1]["uri"]: (
+            b"PK synthetic",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "unsupported.docx",
+        ),
         resources[2]["uri"]: FetchError("HTTP 503 while fetching https://example.com/fail.txt"),
     }
     calls = []
@@ -137,6 +142,55 @@ def test_process_manifest_preserves_mixed_outcomes(tmp_path):
     assert all(options == {"max_bytes": 99, "timeout_seconds": 2.5} for _, options in calls)
     assert (output / "documents/00000/chunks.json").is_file()
     assert not (output / "documents/00001").exists()
+
+
+def test_process_manifest_extracts_and_chunks_local_pdf(tmp_path):
+    root = tmp_path / "sources"
+    root.mkdir()
+    (root / "guide.pdf").write_bytes(
+        build_text_pdf("Installation requirements.", "Maintenance instructions.")
+    )
+    manifest = write_manifest(
+        tmp_path / "manifest.json",
+        [{"uri": "guide.pdf", "media_type": "application/pdf"}],
+    )
+    output = tmp_path / "dataset"
+
+    report = process_manifest(manifest, output, root=root, max_pdf_pages=5)
+
+    assert report["status"] == "complete"
+    assert report["outcomes"][0]["extractor"] == "pdf"
+    document = json.loads(
+        (output / "documents/00000/document.json").read_text(encoding="utf-8")
+    )
+    chunks = json.loads(
+        (output / "documents/00000/chunks.json").read_text(encoding="utf-8")
+    )
+    assert [block["page"] for block in document["blocks"]] == [1, 2]
+    assert document["metadata"]["page_count"] == 2
+    assert chunks["count"] >= 1
+
+
+def test_process_manifest_reports_image_only_pdf_as_ocr_required(tmp_path):
+    root = tmp_path / "sources"
+    root.mkdir()
+    (root / "scan.pdf").write_bytes(build_text_pdf(""))
+    manifest = write_manifest(tmp_path / "manifest.json", [{"uri": "scan.pdf"}])
+
+    report = process_manifest(manifest, tmp_path / "dataset", root=root)
+
+    assert report["status"] == "failed"
+    assert report["processed_count"] == report["failed_count"] == 0
+    assert report["skipped_count"] == 1
+    assert report["outcomes"][0] == {
+        "index": 0,
+        "uri": "scan.pdf",
+        "status": "skipped",
+        "reason": "ocr_required",
+        "media_type": "application/pdf",
+        "filename": "scan.pdf",
+        "pages": 1,
+    }
 
 
 @pytest.mark.parametrize(
@@ -238,7 +292,14 @@ def test_source_process_cli_runs_local_pipeline(tmp_path, capsys):
 
 @pytest.mark.parametrize(
     "option",
-    ["--limit", "--max-manifest-bytes", "--max-bytes", "--timeout", "--max-tokens"],
+    [
+        "--limit",
+        "--max-manifest-bytes",
+        "--max-bytes",
+        "--timeout",
+        "--max-tokens",
+        "--max-pdf-pages",
+    ],
 )
 def test_source_process_cli_rejects_non_positive_bounds(option):
     with pytest.raises(SystemExit) as caught:
