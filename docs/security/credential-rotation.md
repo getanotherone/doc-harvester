@@ -15,5 +15,13 @@ object storage, Notion, Confluence, and deployment/CI secrets:
 7. Record only: credential label, owner, rotation date, verification date, old-value revoked
    (`yes/no`), and reviewer.
 
-If a previously public credential cannot be proven revoked, Phase 1 remains incomplete even
-when secret scanning passes.
+If a previously public credential cannot be proven revoked or rendered unusable by a
+documented retirement control, Phase 1 remains incomplete even when secret scanning passes.
+
+## Retirement alternative
+
+When an integration is permanently abandoned, the owner may record an explicit retirement
+disposition instead of creating a replacement credential. The record must identify the
+control that makes old access unusable (for example, a blocked or deleted provider account)
+and state that reactivation requires newly created credentials. Do not record account IDs,
+old credential values, private URLs, or screenshots containing them.

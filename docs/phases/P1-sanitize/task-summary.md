@@ -3,7 +3,8 @@
 ## Summary
 
 Phase 1 makes the public snapshot safe to distribute and installs controls that prevent
-credentials, private URLs, generated data, and personal paths from returning.
+credentials, private URLs, generated data, and personal paths from returning. Phase 1 was
+completed on 2026-08-04 after an owner-approved credential inventory and disposition review.
 
 ## Background
 
@@ -68,14 +69,34 @@ CI is the enforcement point for committed history. Maintainers run
 - No generated documents or private identifiers are reachable from public refs.
 - Credential rotation and redistribution review are recorded using the security runbook.
 
-## Current evidence (2026-07-15)
+## Current evidence (updated 2026-08-04)
 
 | Requirement | Status | Evidence |
 |---|---|---|
 | Generated data removed from current history | Passed | No dataset/document artifact paths are reachable from fetched public refs. |
 | Ignore rules and safe example | Passed | `.gitignore` excludes local secrets/artifacts; `.env.example` contains placeholders. |
 | Personal path removal | Passed | Public documentation uses repository-relative paths. |
-| URL log redaction | Passed | Security tests are included in the 81-test standalone run. |
-| Repeatable secret scan | Passed locally; CI configured | Gitleaks 8.30.1 found no leaks in 9 commits or the non-ignored working tree. |
-| Credential rotation/revocation | Manual gate | Use `docs/security/credential-rotation.md`; never commit values. |
+| URL log redaction | Passed | Security tests are included in the 81-test standalone run, repeated on 2026-08-04. |
+| Repeatable secret scan | Passed locally; CI configured | Gitleaks found no leaks in complete history or the non-ignored working tree on 2026-08-04. |
+| Credential rotation/revocation | Passed by disposition review | Yandex is retired with a blocked account; the new Notion test token is retained; other provider credentials are not configured. |
 | Redistribution decision | Documented for current snapshot | See `docs/security/redistribution-review.md`. |
+
+## Sanitized credential evidence (2026-08-04)
+
+Only environment-variable names and `set`/`empty` state were inspected. No credential value,
+token fingerprint, private URL, account identifier, or organization identifier was printed
+or committed.
+
+| Integration | Disposition | Local configuration evidence |
+|---|---|---|
+| Yandex Disk, Wiki, and Search | Retired; owner reports the Yandex account is blocked and the integrations will not be used again | Credential variables are empty |
+| Notion | Active; newly created least-scope token used for the Notion validation and approved to remain | `NOTION_TOKEN` is set; value not inspected or recorded |
+| Confluence | Not configured | Credential and destination variables are empty |
+| S3/AWS object storage | Not configured | Credential, bucket, endpoint, and region variables are empty |
+| Database | No external database credential configured for this repository | Owner confirmation; no credential recorded |
+| Custom CI/deployment credentials | Not configured | Owner confirmation; workflow uses only GitHub's job-scoped token |
+| Local HTTP API | Not configured for production use | `SCRAPPER_API_KEY` contains only the documented placeholder |
+
+The owner accepted account blocking plus permanent retirement as the Yandex credential
+disposition. Re-enabling any Yandex integration requires creation of new credentials rather
+than reuse of historical ones.
