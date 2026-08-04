@@ -21,6 +21,7 @@ DEFAULT_MAX_XML_BYTES = 10 * 1024 * 1024
 DEFAULT_MAX_FETCH_BYTES = 50 * 1024 * 1024
 DEFAULT_HTTP_TIMEOUT_SECONDS = 30.0
 DEFAULT_MAX_CHUNK_TOKENS = 800
+DEFAULT_MAX_PDF_PAGES = 1000
 
 
 def _positive_int(value: str) -> int:
@@ -198,6 +199,14 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
         ),
         help="Absolute chunk token bound (default: 800)",
     )
+    process.add_argument(
+        "--max-pdf-pages",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_PDF_PAGES", DEFAULT_MAX_PDF_PAGES
+        ),
+        help="Maximum pages accepted from one PDF (default: 1000)",
+    )
     process.set_defaults(handler=_run_process)
 
 
@@ -351,6 +360,7 @@ def _run_process(args: argparse.Namespace) -> int:
             max_fetch_bytes=args.max_bytes,
             timeout_seconds=args.timeout,
             max_tokens=args.max_tokens,
+            max_pdf_pages=args.max_pdf_pages,
         )
     except (ManifestValidationError, FetchError, OSError, ValueError) as error:
         print(f"source processing failed: {error}", file=sys.stderr)

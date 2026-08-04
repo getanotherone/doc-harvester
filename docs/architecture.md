@@ -43,8 +43,8 @@ excluded from Git.
   the core discovery contract.
 - `doc_harvester.fetchers` provides bounded HTTP and root-confined local-file
   implementations of the core fetch contract.
-- `doc_harvester.extractors` provides neutral plain-text/Markdown and static HTML/XML
-  implementations of the core extraction contract.
+- `doc_harvester.extractors` provides neutral plain-text/Markdown, static HTML/XML, and
+  digital-text PDF implementations of the core extraction contract.
 - `doc_harvester.chunkers` provides the first structure-aware implementation of the core
   chunking contract.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
@@ -79,13 +79,15 @@ does not apply robots allow/disallow rules to later page requests.
 
 `source process` is the first manifest-driven universal processing path. It stages a new
 local dataset containing normalized blocks, chunks, and a per-resource report, then
-publishes that directory atomically. It does not save originals or support binary document
-formats yet; the legacy scraper and DocProc retain their existing PDF/office capabilities.
+publishes that directory atomically. It does not save originals. It supports embedded-text
+PDFs without external OCR; textless PDFs are marked `ocr_required`. The legacy scraper and
+DocProc retain their broader OCR/office capabilities.
 
 ## Reliability controls
 
 - Streaming downloads avoid loading large responses into memory.
-- PDF extraction works page by page with resumable unit files.
+- Universal digital-text PDF extraction preserves page identity and enforces a page limit.
+- Legacy PDF/OCR extraction works page by page with resumable unit files.
 - Crawl delay, page limits, URL scoring, and consecutive-error thresholds bound traversal.
 - Chunking preserves table rows and normative blocks where possible.
 - Quality reports identify empty, tiny, duplicate, noisy, and oversized chunks.
