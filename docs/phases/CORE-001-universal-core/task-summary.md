@@ -5,12 +5,12 @@
 | Field | Value |
 |---|---|
 | Phase ID | `CORE-001` |
-| Status | In validation |
+| Status | Complete |
 | Owner | Repository maintainer |
 | Started | 2026-08-04 |
-| Completed | Pending validation |
+| Completed | 2026-08-04 |
 | Component | `doc_harvester.core` |
-| Related issue / PR | Pending |
+| Related issue / PR | [#7](https://github.com/getanotherone/doc-harvester/pull/7) |
 | Manual tests | [manual-test-cases.md](manual-test-cases.md) |
 | Operator documentation | [Providers](../../providers.md) |
 
@@ -199,9 +199,13 @@ Not completed or deferred:
 
 Verification evidence:
 
-- Focused lint passed.
+- Ruff passed.
+- Standalone suite: 85 passed.
+- DocProc suite: 107 passed.
 - Focused core/storage/publisher tests: 16 passed.
-- Complete suite, wheel, Gitleaks, and CI evidence pending final validation.
+- Wheel build passed; isolated installation imported all nine core contracts.
+- Gitleaks complete-history and public working-tree scans passed.
+- PR #7 standalone 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
 
 ## Decisions and open questions
 

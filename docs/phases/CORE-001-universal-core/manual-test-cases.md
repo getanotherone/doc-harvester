@@ -10,7 +10,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `CORE-001-TC-02` | Provider-neutral pipeline composition | Critical | Passed locally |
 | `CORE-001-TC-03` | Core import boundary excludes providers | Critical | Passed locally |
 | `CORE-001-TC-04` | Storage and publisher compatibility | High | Passed locally |
-| `CORE-001-TC-05` | Complete validation and distributable package | Critical | In progress |
+| `CORE-001-TC-05` | Complete validation and distributable package | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -167,7 +167,7 @@ Related task summary: [task-summary.md](task-summary.md)
 - **Type:** Regression, Packaging, Security
 - **Automation Status:** Automated and CI
 - **Environment:** Local Python 3.11; CI Python 3.11/3.12
-- **Current Status:** In progress
+- **Current Status:** Passed
 - **Preconditions:** Development dependencies and Gitleaks are installed.
 
 ### Steps to reproduce
@@ -186,11 +186,13 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** In progress
-- **Executed:** Pending
+- **Status:** Passed
+- **Executed:** 2026-08-04
 - **Tester:** Automation
-- **Actual Result:** Focused checks passed; complete validation pending.
-- **Evidence:** Pending CI
+- **Actual Result:** Ruff passed; 85 standalone and 107 DocProc tests passed; the wheel
+  contained all core modules and imported all nine contracts in an isolated environment;
+  Gitleaks and every initial PR check passed.
+- **Evidence:** [PR #7](https://github.com/getanotherone/doc-harvester/pull/7)
 - **Issue:** Not applicable
 
 ## Automated coverage references
