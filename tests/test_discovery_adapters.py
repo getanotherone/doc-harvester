@@ -52,6 +52,14 @@ def test_manual_discovery_deduplicates_defragments_guesses_type_and_limits():
     assert all(item.source == "manual" for item in resources)
 
 
+def test_manual_discovery_uses_portable_markdown_media_type():
+    resources = ManualDiscoveryProvider().discover(
+        DiscoveryRequest(manual_uris=("README.md", "guide.markdown"))
+    )
+
+    assert [item.media_type for item in resources] == ["text/markdown", "text/markdown"]
+
+
 def test_manual_discovery_validates_input_and_credentials():
     provider = ManualDiscoveryProvider()
     with pytest.raises(ValueError, match="manual_uris"):
@@ -164,4 +172,3 @@ def test_discovery_factory_lists_and_builds_builtin_adapters():
     )
     with pytest.raises(ValueError, match="unknown discovery provider"):
         create_discovery_provider("search-engine")
-

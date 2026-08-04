@@ -48,6 +48,16 @@ The demo uses embedded HTML, requires no credentials or network access, and writ
 ## CLI
 
 ```bash
+# Create a credential-free manifest from explicit resources
+doc-harvester source discover manual README.md docs/architecture.md
+
+# Discover resources from a sitemap without a search-provider account
+doc-harvester source discover sitemap https://example.com/sitemap.xml \
+  --output discovery.json
+
+# Fetch one selected resource into an explicit file
+doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
+
 # Crawl locally without uploading
 doc-harvester crawl https://example.com/catalog/ --no-upload
 
@@ -129,8 +139,8 @@ Provider-neutral contracts for the complete pipeline are available under
 other vendor adapters are not imported by this core package.
 
 Credential-free manual/sitemap discovery and HTTP/local-file fetchers are available under
-`doc_harvester.discovery` and `doc_harvester.fetchers`. They are currently programmatic
-APIs; the legacy CLI has not yet migrated to this orchestration path.
+`doc_harvester.discovery` and `doc_harvester.fetchers`. The additive `source` CLI exposes
+them without changing the legacy crawl and provider-search orchestration.
 
 ## Development
 

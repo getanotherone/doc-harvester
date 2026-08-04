@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import gzip
 import io
-import mimetypes
 import xml.etree.ElementTree as ET
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from doc_harvester.core import DiscoveryProvider, DiscoveryRequest, Fetcher, ResourceRef
 from doc_harvester.fetchers import FetchError, HTTPFetcher
+from doc_harvester.media import guess_media_type
 
 
 class SitemapDiscoveryProvider(DiscoveryProvider):
@@ -85,7 +85,7 @@ class SitemapDiscoveryProvider(DiscoveryProvider):
                 if uri in seen_pages:
                     continue
                 seen_pages.add(uri)
-                media_type = mimetypes.guess_type(urlsplit(uri).path)[0] or ""
+                media_type = guess_media_type(urlsplit(uri).path)
                 discovered.append(ResourceRef(uri, source=self.name, media_type=media_type))
                 if len(discovered) >= request.limit:
                     break

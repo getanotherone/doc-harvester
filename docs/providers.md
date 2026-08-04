@@ -33,8 +33,8 @@ working internal models or orchestration.
 ## Credential-free discovery and fetching
 
 The first concrete discovery adapters accept manual resource locations or inspect sitemap
-files. The first fetchers read bounded HTTP responses or root-confined local files. These
-APIs are currently programmatic; wiring them into profiles and the CLI is a later phase.
+files. The first fetchers read bounded HTTP responses or root-confined local files. They
+are available through both the Python API and the additive `source` CLI group.
 
 ```python
 from doc_harvester.core import DiscoveryRequest
@@ -63,6 +63,20 @@ Built-in adapters:
 Sitemap discovery is same-origin by default and bounds both sitemap count and decoded XML
 size. The local fetcher resolves paths before enforcing its root boundary. HTTP failure
 messages remove query strings and fragments; embedded URL credentials are rejected.
+
+The adapters are available from the public CLI without changing the legacy discovery and
+crawl commands:
+
+```bash
+doc-harvester source discover manual README.md docs/architecture.md
+doc-harvester source discover sitemap https://example.com/sitemap.xml
+doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
+```
+
+Discovery produces a manifest only; it never downloads every discovered page. Fetching
+requires one selected resource and an explicit output file. See
+[Configuration](configuration.md#credential-free-source-commands) for bounds, overwrite
+behavior, and environment defaults.
 
 ## Storage
 

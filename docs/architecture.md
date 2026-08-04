@@ -68,10 +68,10 @@ and publisher adapters implement its `StorageBackend` and `Publisher` contracts 
 backward-compatible public aliases. Migration of the flat scraper and DocProc stages to
 implement the remaining contracts directly is incremental follow-up work.
 
-The new credential-free discovery and fetch adapters are an additive programmatic API.
-They do not yet replace the flat scraper's legacy CLI orchestration. Sitemap discovery
-follows sitemap declarations and indexes; it is not an HTML crawler and does not apply
-robots allow/disallow rules to later page requests.
+The credential-free discovery and fetch adapters are exposed through an additive `source`
+CLI group. They do not replace the flat scraper's legacy crawl or search orchestration.
+Sitemap discovery follows sitemap declarations and indexes; it is not an HTML crawler and
+does not apply robots allow/disallow rules to later page requests.
 
 ## Reliability controls
 

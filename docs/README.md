@@ -10,6 +10,8 @@
 - [CORE-001 manual test cases](phases/CORE-001-universal-core/manual-test-cases.md)
 - [ADAPT-001 — Credential-free discovery and fetching](phases/ADAPT-001-credential-free-adapters/task-summary.md)
 - [ADAPT-001 manual test cases](phases/ADAPT-001-credential-free-adapters/manual-test-cases.md)
+- [CLI-001 — Credential-free source orchestration](phases/CLI-001-source-orchestration/task-summary.md)
+- [CLI-001 manual test cases](phases/CLI-001-source-orchestration/manual-test-cases.md)
 
 ## Operations and security
 

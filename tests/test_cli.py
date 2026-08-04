@@ -15,6 +15,7 @@ def test_cli_exposes_public_commands():
         "profile": ["profile", "list"],
         "api": ["api"],
         "demo": ["demo"],
+        "source": ["source", "discover", "manual", "README.md"],
     }
     for command, argv in invocations.items():
         args = parser.parse_args(argv)

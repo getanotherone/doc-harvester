@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import mimetypes
 from urllib.parse import urldefrag, urlsplit
 
 from doc_harvester.core import DiscoveryProvider, DiscoveryRequest, ResourceRef
+from doc_harvester.media import guess_media_type
 
 
 class ManualDiscoveryProvider(DiscoveryProvider):
@@ -32,7 +32,7 @@ class ManualDiscoveryProvider(DiscoveryProvider):
             if uri in seen:
                 continue
             seen.add(uri)
-            media_type = mimetypes.guess_type(parsed.path)[0] or ""
+            media_type = guess_media_type(parsed.path)
             resources.append(ResourceRef(uri, source=self.name, media_type=media_type))
             if len(resources) >= request.limit:
                 break
