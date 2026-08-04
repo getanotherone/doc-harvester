@@ -88,7 +88,10 @@ python -m pip install -e '.[api]'
 SCRAPPER_API_KEY=change-me doc-harvester api
 ```
 
-Copy `.env.example` to `.env` for local configuration. Never commit `.env`.
+`.env.example` documents safe standalone defaults and optional integrations. If you copy it
+to `.env`, review it first and export its values in your shell; the public CLI does not
+automatically load `.env`. Never commit the resulting file. DocProc uses the separate
+`services/doc_proc/.env.example` template.
 
 ## Output Model
 
