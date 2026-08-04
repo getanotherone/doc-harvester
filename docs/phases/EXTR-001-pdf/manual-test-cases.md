@@ -10,7 +10,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `EXTR-001-TC-02` | Report an image-only PDF as OCR-required | High | Passed by automation |
 | `EXTR-001-TC-03` | Reject invalid and over-limit PDFs safely | Critical | Passed by automation |
 | `EXTR-001-TC-04` | Verify public adapter and configuration surface | High | Passed by automation |
-| `EXTR-001-TC-05` | Complete regression and package validation | Critical | Passed locally; CI pending |
+| `EXTR-001-TC-05` | Complete regression and package validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -169,11 +169,11 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed locally; CI pending
+- **Status:** Passed
 - **Executed:** 2026-08-04
 - **Tester:** Automation
-- **Actual Result:** Ruff, 160 standalone tests, 107 DocProc tests, wheel build/contents/import/extraction, installed CLI help, diff validation, and both relevant Gitleaks scans passed.
-- **Evidence:** Local validation output; pull-request evidence pending
+- **Actual Result:** Ruff, 160 standalone tests, 107 DocProc tests, wheel build/contents/import/extraction, installed CLI help, diff validation, and both relevant Gitleaks scans passed. PR Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
+- **Evidence:** Local validation output; [PR #13](https://github.com/getanotherone/doc-harvester/pull/13)
 - **Issue:** Not applicable
 
 ## Automated coverage references
