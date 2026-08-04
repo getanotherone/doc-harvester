@@ -53,6 +53,11 @@ flag with the corresponding name takes precedence.
 | `DOC_HARVESTER_MAX_PDF_PAGES` | `1000` | `--max-pdf-pages`; maximum pages accepted from one PDF |
 | `DOC_HARVESTER_MAX_DOCX_BLOCKS` | `10000` | `--max-docx-blocks`; maximum normalized blocks from one DOCX |
 | `DOC_HARVESTER_MAX_DOCX_UNCOMPRESSED_BYTES` | `104857600` | `--max-docx-uncompressed-bytes`; maximum expanded DOCX archive bytes |
+| `DOC_HARVESTER_MAX_XLSX_SHEETS` | `100` | `--max-xlsx-sheets`; maximum worksheets from one XLSX |
+| `DOC_HARVESTER_MAX_XLSX_ROWS` | `200000` | `--max-xlsx-rows`; maximum inspected rows from one XLSX |
+| `DOC_HARVESTER_MAX_XLSX_CELLS` | `2000000` | `--max-xlsx-cells`; maximum inspected cells from one XLSX |
+| `DOC_HARVESTER_MAX_XLSX_UNCOMPRESSED_BYTES` | `262144000` | `--max-xlsx-uncompressed-bytes`; maximum expanded XLSX bytes |
+| `DOC_HARVESTER_XLSX_INCLUDE_HIDDEN` | `0` | `--include-hidden-xlsx-sheets`; include hidden sheets only when explicitly enabled |
 
 The CLI reads exported process environment variables; it does not automatically load
 `.env`. In zsh, load the safe values from a reviewed local file before running commands:
@@ -117,13 +122,14 @@ doc-harvester source process discovery.json \
 ```
 
 Processing currently supports plain text, Markdown, HTML, XHTML, XML, embedded-text PDFs,
-and DOCX main-body text/tables. A textless/image-only PDF is skipped with reason
-`ocr_required`; the universal command does not invoke OCR. Legacy DOC, other Office,
-spreadsheet, image, and unsupported binary formats are reported as skipped. The destination
-must not already exist; the command stages the complete report/documents/chunks beside it
-and publishes the directory atomically. Original fetched bytes are not saved. A mixed
-dataset is still published for review, while any failed resource makes the command return
-non-zero.
+DOCX main-body text/tables, and bounded XLSX worksheet rows. XLSX formulas are retained as
+text and hidden sheets are excluded by default. A textless/image-only PDF is skipped with
+reason `ocr_required`; the universal command does not invoke OCR. Legacy DOC, other Office,
+legacy spreadsheet, image, and unsupported binary formats are reported as skipped. The
+destination must not already exist; the command stages the complete report/documents/chunks
+beside it and publishes the directory atomically. Original fetched bytes are not saved. A
+mixed dataset is still published for review, while any failed resource makes the command
+return non-zero.
 
 ## Crawl controls
 

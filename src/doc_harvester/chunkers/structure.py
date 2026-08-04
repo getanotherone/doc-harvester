@@ -21,7 +21,7 @@ class StructureAwareChunker(Chunker):
             raise ValueError(f"unsupported strategy for {self.name}: {options.strategy}")
 
         blocks = []
-        uses_flow_layout = document.metadata.get("extractor") == "docx"
+        uses_flow_layout = document.metadata.get("extractor") in {"docx", "xlsx"}
         for index, content_block in enumerate(document.blocks):
             if not content_block.text.strip():
                 continue

@@ -15,6 +15,7 @@ from doc_harvester.manifest_processing import (
 )
 from tests.pdf_fixture import build_text_pdf
 from tests.docx_fixture import build_docx, paragraph, table
+from tests.xlsx_fixture import build_xlsx
 
 
 def write_manifest(path: Path, resources, **overrides):
@@ -97,7 +98,7 @@ def test_process_manifest_writes_local_text_and_html_dataset(tmp_path):
 def test_process_manifest_preserves_mixed_outcomes(tmp_path):
     resources = [
         {"uri": "https://example.com/good.txt", "source": "manual"},
-        {"uri": "https://example.com/unsupported.xlsx", "source": "manual"},
+        {"uri": "https://example.com/unsupported.pptx", "source": "manual"},
         {"uri": "https://example.com/fail.txt", "source": "manual"},
     ]
     manifest = write_manifest(tmp_path / "manifest.json", resources)
@@ -105,8 +106,8 @@ def test_process_manifest_preserves_mixed_outcomes(tmp_path):
         resources[0]["uri"]: (b"Useful technical text.", "text/plain", "good.txt"),
         resources[1]["uri"]: (
             b"PK synthetic",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "unsupported.xlsx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "unsupported.pptx",
         ),
         resources[2]["uri"]: FetchError("HTTP 503 while fetching https://example.com/fail.txt"),
     }
@@ -227,6 +228,66 @@ def test_process_manifest_extracts_and_chunks_local_docx(tmp_path):
     assert chunks["count"] >= 1
 
 
+def test_process_manifest_extracts_and_chunks_local_xlsx(tmp_path):
+    root = tmp_path / "sources"
+    root.mkdir()
+    (root / "catalog.xlsx").write_bytes(
+        build_xlsx({"Products": [["Model", "Rating"], ["A-1", "16 A"]]})
+    )
+    manifest = write_manifest(tmp_path / "manifest.json", [{"uri": "catalog.xlsx"}])
+    output = tmp_path / "dataset"
+
+    report = process_manifest(manifest, output, root=root, max_xlsx_rows=10)
+
+    assert report["status"] == "complete"
+    assert report["outcomes"][0]["extractor"] == "xlsx"
+    document = json.loads(
+        (output / "documents/00000/document.json").read_text(encoding="utf-8")
+    )
+    chunks = json.loads(
+        (output / "documents/00000/chunks.json").read_text(encoding="utf-8")
+    )
+    assert [block["text"] for block in document["blocks"]] == [
+        "Model | Rating",
+        "A-1 | 16 A",
+    ]
+    assert document["metadata"]["sheet_count"] == 1
+    assert chunks["count"] >= 1
+
+
+def test_process_manifest_xlsx_hidden_sheet_policy_is_explicit(tmp_path):
+    root = tmp_path / "sources"
+    root.mkdir()
+    (root / "catalog.xlsx").write_bytes(
+        build_xlsx(
+            {"Public": [["Visible"]], "Internal": [["Hidden"]]},
+            hidden_sheets={"Internal"},
+        )
+    )
+    manifest = write_manifest(tmp_path / "manifest.json", [{"uri": "catalog.xlsx"}])
+
+    process_manifest(manifest, tmp_path / "default", root=root)
+    process_manifest(
+        manifest,
+        tmp_path / "included",
+        root=root,
+        include_hidden_xlsx_sheets=True,
+    )
+
+    default_document = json.loads(
+        (tmp_path / "default/documents/00000/document.json").read_text(encoding="utf-8")
+    )
+    included_document = json.loads(
+        (tmp_path / "included/documents/00000/document.json").read_text(encoding="utf-8")
+    )
+    assert [block["text"] for block in default_document["blocks"]] == ["Visible"]
+    assert default_document["metadata"]["skipped_hidden_sheet_count"] == 1
+    assert [block["text"] for block in included_document["blocks"]] == [
+        "Visible",
+        "Hidden",
+    ]
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -335,6 +396,10 @@ def test_source_process_cli_runs_local_pipeline(tmp_path, capsys):
         "--max-pdf-pages",
         "--max-docx-blocks",
         "--max-docx-uncompressed-bytes",
+        "--max-xlsx-sheets",
+        "--max-xlsx-rows",
+        "--max-xlsx-cells",
+        "--max-xlsx-uncompressed-bytes",
     ],
 )
 def test_source_process_cli_rejects_non_positive_bounds(option):

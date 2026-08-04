@@ -44,7 +44,8 @@ excluded from Git.
 - `doc_harvester.fetchers` provides bounded HTTP and root-confined local-file
   implementations of the core fetch contract.
 - `doc_harvester.extractors` provides neutral plain-text/Markdown, static HTML/XML,
-  digital-text PDF, and structure-aware DOCX implementations of the core extraction contract.
+  digital-text PDF, structure-aware DOCX, and bounded XLSX implementations of the core
+  extraction contract.
 - `doc_harvester.chunkers` provides the first structure-aware implementation of the core
   chunking contract.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
@@ -83,6 +84,8 @@ publishes that directory atomically. It does not save originals. It supports emb
 PDFs without external OCR; textless PDFs are marked `ocr_required`. The legacy scraper and
 DocProc retain their broader OCR/office capabilities. The universal DOCX adapter reads
 bounded OOXML main-body content without extracting archives to disk or inventing pages.
+The XLSX adapter streams visible worksheets, retains formulas without evaluation, and
+requires explicit opt-in for hidden sheets.
 
 ## Reliability controls
 

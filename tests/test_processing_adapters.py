@@ -13,6 +13,7 @@ from doc_harvester.extractors import (
     HTMLExtractor,
     PDFExtractor,
     TextExtractor,
+    XLSXExtractor,
     available_extractors,
     create_extractor,
     select_extractor,
@@ -124,13 +125,14 @@ def test_structure_aware_chunker_returns_indexed_bounded_chunks():
 
 
 def test_processing_adapter_factories_list_and_build_supported_adapters():
-    assert available_extractors() == ("text", "html-xml", "pdf", "docx")
+    assert available_extractors() == ("text", "html-xml", "pdf", "docx", "xlsx")
     assert isinstance(create_extractor("xml"), HTMLExtractor)
     assert isinstance(create_extractor("pdf"), PDFExtractor)
     assert isinstance(create_extractor("docx"), DOCXExtractor)
+    assert isinstance(create_extractor("xlsx"), XLSXExtractor)
     assert available_chunkers() == ("structure-aware",)
     assert isinstance(create_chunker("default"), StructureAwareChunker)
     with pytest.raises(ValueError, match="unknown extractor"):
-        create_extractor("xlsx")
+        create_extractor("csv")
     with pytest.raises(ValueError, match="unknown chunker"):
         create_chunker("semantic")
