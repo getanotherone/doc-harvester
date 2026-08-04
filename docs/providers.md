@@ -78,6 +78,26 @@ requires one selected resource and an explicit output file. See
 [Configuration](configuration.md#credential-free-source-commands) for bounds, overwrite
 behavior, and environment defaults.
 
+## Credential-free extraction and chunking
+
+Built-in processing adapters implement the universal core contracts:
+
+| Stage | Name | Supported input / behavior |
+|---|---|---|
+| Extract | `text` | UTF-8-compatible plain text and Markdown paragraphs |
+| Extract | `html-xml` | Neutral static HTML/XHTML/XML structural content |
+| Chunk | `structure-aware` | Paragraph, section, table, and normative-aware token bounds |
+
+```python
+from doc_harvester.chunkers import create_chunker
+from doc_harvester.extractors import select_extractor
+```
+
+The `source process` command connects manifests, automatic HTTP/local fetching, extractor
+selection, and structure-aware chunking. It writes normalized JSON locally and does not
+persist original bytes, upload, publish, or silently treat unsupported binary formats as
+text.
+
 ## Storage
 
 All storage adapters implement `StorageProvider`:

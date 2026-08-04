@@ -12,6 +12,8 @@
 - [ADAPT-001 manual test cases](phases/ADAPT-001-credential-free-adapters/manual-test-cases.md)
 - [CLI-001 — Credential-free source orchestration](phases/CLI-001-source-orchestration/task-summary.md)
 - [CLI-001 manual test cases](phases/CLI-001-source-orchestration/manual-test-cases.md)
+- [PIPE-001 — Manifest-driven local processing](phases/PIPE-001-manifest-processing/task-summary.md)
+- [PIPE-001 manual test cases](phases/PIPE-001-manifest-processing/manual-test-cases.md)
 
 ## Operations and security
 

@@ -52,6 +52,9 @@ def test_parser_exposes_credential_free_source_commands():
     fetch = parser.parse_args(
         ["source", "fetch", "README.md", "--output", "/tmp/readme.md"]
     )
+    process = parser.parse_args(
+        ["source", "process", "manifest.json", "--output", "/tmp/dataset"]
+    )
 
     assert (manual.command, manual.source_command, manual.discovery_mode) == (
         "source",
@@ -60,6 +63,7 @@ def test_parser_exposes_credential_free_source_commands():
     )
     assert sitemap.discovery_mode == "sitemap"
     assert fetch.source_command == "fetch"
+    assert process.source_command == "process"
 
 
 def test_manual_discovery_emits_versioned_manifest(capsys):
