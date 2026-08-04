@@ -39,6 +39,10 @@ excluded from Git.
 - `doc_harvester.cli` is the stable public command entrypoint.
 - `doc_harvester.core` owns provider-neutral contracts and shared data models for discovery,
   crawling, fetching, extraction, chunking, enrichment, quality, storage, and publishing.
+- `doc_harvester.discovery` provides credential-free manual and sitemap implementations of
+  the core discovery contract.
+- `doc_harvester.fetchers` provides bounded HTTP and root-confined local-file
+  implementations of the core fetch contract.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
 - `api/` exposes asynchronous task endpoints around standalone operations.
 - `services/doc_proc/` owns its database, queue, storage, embedding, and parsing concerns.
@@ -63,6 +67,11 @@ The universal core intentionally contains no concrete provider imports. Existing
 and publisher adapters implement its `StorageBackend` and `Publisher` contracts through
 backward-compatible public aliases. Migration of the flat scraper and DocProc stages to
 implement the remaining contracts directly is incremental follow-up work.
+
+The new credential-free discovery and fetch adapters are an additive programmatic API.
+They do not yet replace the flat scraper's legacy CLI orchestration. Sitemap discovery
+follows sitemap declarations and indexes; it is not an HTML crawler and does not apply
+robots allow/disallow rules to later page requests.
 
 ## Reliability controls
 
