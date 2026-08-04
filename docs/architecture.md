@@ -37,6 +37,8 @@ excluded from Git.
 ## Package boundaries
 
 - `doc_harvester.cli` is the stable public command entrypoint.
+- `doc_harvester.core` owns provider-neutral contracts and shared data models for discovery,
+  crawling, fetching, extraction, chunking, enrichment, quality, storage, and publishing.
 - Flat modules under `src/` are the existing implementation and compatibility surface.
 - `api/` exposes asynchronous task endpoints around standalone operations.
 - `services/doc_proc/` owns its database, queue, storage, embedding, and parsing concerns.
@@ -56,6 +58,11 @@ validated profile files rather than an implicit electrical fallback.
 
 The legacy optimized Yandex batch uploader remains in `scraper.py` as a compatibility
 surface. New integrations should use the public provider contracts.
+
+The universal core intentionally contains no concrete provider imports. Existing storage
+and publisher adapters implement its `StorageBackend` and `Publisher` contracts through
+backward-compatible public aliases. Migration of the flat scraper and DocProc stages to
+implement the remaining contracts directly is incremental follow-up work.
 
 ## Reliability controls
 
