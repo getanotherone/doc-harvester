@@ -163,4 +163,4 @@ Local verification on 2026-08-04:
 - Complete DocProc suite: 107 passed.
 - Ruff, diff validation, wheel build/contents/import/extraction, installed CLI help, and
   complete-history/public-tree Gitleaks scans passed.
-- PR CI and CodeQL evidence will be attached after the pull request completes.
+- PR #14 standalone Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
