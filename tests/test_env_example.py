@@ -70,6 +70,8 @@ def test_root_env_example_covers_the_public_standalone_surface():
         "DOC_HARVESTER_MAX_MANIFEST_BYTES",
         "DOC_HARVESTER_MAX_CHUNK_TOKENS",
         "DOC_HARVESTER_MAX_PDF_PAGES",
+        "DOC_HARVESTER_MAX_DOCX_BLOCKS",
+        "DOC_HARVESTER_MAX_DOCX_UNCOMPRESSED_BYTES",
         "SCRAPPER_API_KEY",
         "S3_BUCKET",
         "NOTION_TOKEN",

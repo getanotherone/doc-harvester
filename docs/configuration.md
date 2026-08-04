@@ -51,6 +51,8 @@ flag with the corresponding name takes precedence.
 | `DOC_HARVESTER_MAX_MANIFEST_BYTES` | `5242880` | `--max-manifest-bytes`; processing-manifest bound |
 | `DOC_HARVESTER_MAX_CHUNK_TOKENS` | `800` | `--max-tokens`; absolute processing chunk bound |
 | `DOC_HARVESTER_MAX_PDF_PAGES` | `1000` | `--max-pdf-pages`; maximum pages accepted from one PDF |
+| `DOC_HARVESTER_MAX_DOCX_BLOCKS` | `10000` | `--max-docx-blocks`; maximum normalized blocks from one DOCX |
+| `DOC_HARVESTER_MAX_DOCX_UNCOMPRESSED_BYTES` | `104857600` | `--max-docx-uncompressed-bytes`; maximum expanded DOCX archive bytes |
 
 The CLI reads exported process environment variables; it does not automatically load
 `.env`. In zsh, load the safe values from a reviewed local file before running commands:
@@ -114,13 +116,14 @@ doc-harvester source process discovery.json \
   --root . --output /tmp/doc-harvester-dataset --max-tokens 800
 ```
 
-Processing currently supports plain text, Markdown, HTML, XHTML, XML, and PDFs with
-embedded text. A textless/image-only PDF is skipped with reason `ocr_required`; the
-universal command does not invoke OCR. Office, spreadsheet, image, and other unsupported
-binary formats are reported as skipped. The destination must not already exist; the
-command stages the complete report/documents/chunks beside it and publishes the directory
-atomically. Original fetched bytes are not saved. A mixed dataset is still published for
-review, while any failed resource makes the command return non-zero.
+Processing currently supports plain text, Markdown, HTML, XHTML, XML, embedded-text PDFs,
+and DOCX main-body text/tables. A textless/image-only PDF is skipped with reason
+`ocr_required`; the universal command does not invoke OCR. Legacy DOC, other Office,
+spreadsheet, image, and unsupported binary formats are reported as skipped. The destination
+must not already exist; the command stages the complete report/documents/chunks beside it
+and publishes the directory atomically. Original fetched bytes are not saved. A mixed
+dataset is still published for review, while any failed resource makes the command return
+non-zero.
 
 ## Crawl controls
 

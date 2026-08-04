@@ -87,6 +87,7 @@ Built-in processing adapters implement the universal core contracts:
 | Extract | `text` | UTF-8-compatible plain text and Markdown paragraphs |
 | Extract | `html-xml` | Neutral static HTML/XHTML/XML structural content |
 | Extract | `pdf` | Embedded PDF text with page metadata; no OCR or source persistence |
+| Extract | `docx` | OOXML headings, paragraphs, lists, and table rows; bounded expansion |
 | Chunk | `structure-aware` | Paragraph, section, table, and normative-aware token bounds |
 
 ```python
