@@ -4,7 +4,7 @@ config/wiki_publish_map.json
 __pycache__/
 *.pyc
 runs/
-discovery/
+/discovery/
 wiki/out/
 .pytest_cache/
 .ruff_cache/

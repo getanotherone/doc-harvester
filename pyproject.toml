@@ -59,6 +59,8 @@ doc-harvester = "doc_harvester.cli:main"
 packages = [
   "doc_harvester",
   "doc_harvester.core",
+  "doc_harvester.discovery",
+  "doc_harvester.fetchers",
   "doc_harvester.publishers",
   "doc_harvester.storage",
   "api",

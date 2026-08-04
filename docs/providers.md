@@ -30,6 +30,40 @@ The initial interface release is synchronous. Existing standalone and DocProc
 implementations will adopt the contracts incrementally; this phase does not replace their
 working internal models or orchestration.
 
+## Credential-free discovery and fetching
+
+The first concrete discovery adapters accept manual resource locations or inspect sitemap
+files. The first fetchers read bounded HTTP responses or root-confined local files. These
+APIs are currently programmatic; wiring them into profiles and the CLI is a later phase.
+
+```python
+from doc_harvester.core import DiscoveryRequest
+from doc_harvester.discovery import create_discovery_provider
+from doc_harvester.fetchers import create_fetcher
+
+discovery = create_discovery_provider("manual")
+resources = discovery.discover(
+    DiscoveryRequest(manual_uris=("docs/architecture.md",))
+)
+
+fetcher = create_fetcher("local-file", root=".")
+artifact = fetcher.fetch(resources[0])
+print(artifact.filename, len(artifact.content))
+```
+
+Built-in adapters:
+
+| Stage | Name | Behavior |
+|---|---|---|
+| Discovery | `manual` | Ordered, deduplicated paths and `file`/`http`/`https` URIs |
+| Discovery | `sitemap` | Conventional sitemaps, `robots.txt` declarations, indexes, and gzip |
+| Fetch | `http` | Streaming HTTP(S) reads with timeout and byte limits |
+| Fetch | `local-file` | Plain paths and local file URIs confined below a configured root |
+
+Sitemap discovery is same-origin by default and bounds both sitemap count and decoded XML
+size. The local fetcher resolves paths before enforcing its root boundary. HTTP failure
+messages remove query strings and fragments; embedded URL credentials are rejected.
+
 ## Storage
 
 All storage adapters implement `StorageProvider`:

@@ -8,6 +8,8 @@
 - [P1 manual test cases](phases/P1-sanitize/manual-test-cases.md)
 - [CORE-001 — Universal core](phases/CORE-001-universal-core/task-summary.md)
 - [CORE-001 manual test cases](phases/CORE-001-universal-core/manual-test-cases.md)
+- [ADAPT-001 — Credential-free discovery and fetching](phases/ADAPT-001-credential-free-adapters/task-summary.md)
+- [ADAPT-001 manual test cases](phases/ADAPT-001-credential-free-adapters/manual-test-cases.md)
 
 ## Operations and security
 

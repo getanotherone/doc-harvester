@@ -12,6 +12,8 @@ scraper for every website or document type.
 ## Capabilities
 
 - Crawl HTML catalogues and follow relevant child pages.
+- Discover explicit paths/URLs or sitemap resources without provider credentials.
+- Fetch bounded HTTP responses and root-confined local files through universal adapters.
 - Find linked PDF, DOCX, XLSX, HTML, and XML resources.
 - Extract large PDFs page by page with OCR fallback and resumable unit files.
 - Remove navigation, commercial boilerplate, malformed OCR, and CID garbage.
@@ -125,6 +127,10 @@ Provider-neutral contracts for the complete pipeline are available under
 `doc_harvester.core`: `DiscoveryProvider`, `Crawler`, `Fetcher`, `Extractor`, `Chunker`,
 `MetadataEnricher`, `QualityGate`, `StorageBackend`, and `Publisher`. Concrete Yandex and
 other vendor adapters are not imported by this core package.
+
+Credential-free manual/sitemap discovery and HTTP/local-file fetchers are available under
+`doc_harvester.discovery` and `doc_harvester.fetchers`. They are currently programmatic
+APIs; the legacy CLI has not yet migrated to this orchestration path.
 
 ## Development
 
