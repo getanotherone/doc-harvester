@@ -10,7 +10,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `EXTR-003-TC-02` | Enforce hidden-sheet privacy policy | Critical | Passed by automation |
 | `EXTR-003-TC-03` | Reject malformed and over-limit workbooks | Critical | Passed by automation |
 | `EXTR-003-TC-04` | Verify public API and configuration | High | Passed by automation |
-| `EXTR-003-TC-05` | Complete regression and package validation | Critical | Passed locally; CI pending |
+| `EXTR-003-TC-05` | Complete regression and package validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -171,11 +171,11 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed locally; CI pending
+- **Status:** Passed
 - **Executed:** 2026-08-04
 - **Tester:** Automation
-- **Actual Result:** Ruff, 187 standalone tests, 107 DocProc tests, wheel build/contents/import/extraction/chunking, installed CLI help, diff validation, and history/public-tree secret scans passed.
-- **Evidence:** Local validation output; pull-request evidence pending
+- **Actual Result:** Ruff, 187 standalone tests, 107 DocProc tests, wheel build/contents/import/extraction/chunking, installed CLI help, diff validation, and history/public-tree secret scans passed. PR Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed.
+- **Evidence:** Local validation output; [PR #15](https://github.com/getanotherone/doc-harvester/pull/15)
 - **Issue:** Not applicable
 
 ## Automated coverage references
