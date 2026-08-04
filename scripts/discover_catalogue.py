@@ -25,6 +25,7 @@ os.environ.setdefault("YANDEX_DISK_TOKEN", "__discovery_mode__")
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from bs4 import BeautifulSoup
+from doc_harvester.security import sanitize_url_for_logging
 from scraper import (
     WEB_CRAWL_DELAY_SEC,
     _fetch_page_html,
@@ -210,7 +211,7 @@ def discover_catalogue(root_url, output_path, max_pages=50000,
         leaf_info = f" leaves={new_leaves}" if new_leaves else ""
         print(f"  [{len(visited):>5}/{max_pages}] queued={len(to_visit)} "
               f"found={len(all_product_urls)} new={new_links}{leaf_info}"
-              f" <- {current}")
+              f" <- {sanitize_url_for_logging(current)}")
 
         if pages_since_save >= SAVE_EVERY:
             _save_discovery(output_path, root_url, domain, started_at,
@@ -286,7 +287,7 @@ def main():
 
     skip_leaves = not args.no_skip_leaves
     mode = "skip-leaves" if skip_leaves else "visit-all"
-    print(f"Discovering: {args.url}")
+    print(f"Discovering: {sanitize_url_for_logging(args.url)}")
     print(f"Output: {output_path}")
     print(f"Max pages: {args.max_pages}, delay: {WEB_CRAWL_DELAY_SEC}s, mode: {mode}")
     print()

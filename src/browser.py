@@ -16,6 +16,8 @@ import re
 import time
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
 
+from doc_harvester.security import sanitize_text_for_logging, sanitize_url_for_logging
+
 _playwright = None
 _browser: Browser | None = None
 _context: BrowserContext | None = None
@@ -177,6 +179,7 @@ def browser_fetch(url: str, wait_until: str = "domcontentloaded") -> str | None:
     Auto-restarts the browser if it has crashed and retries once.
     """
     global _fetch_count
+    log_url = sanitize_url_for_logging(url)
     _maybe_recycle()
     _fetch_count += 1
     for _attempt in range(2):  # at most one restart
@@ -189,24 +192,24 @@ def browser_fetch(url: str, wait_until: str = "domcontentloaded") -> str | None:
                 return None
             status = response.status
             if status == 429:
-                raise _Rate429(f"429 on {url}")
+                raise _Rate429(f"429 on {log_url}")
             if status == 404:
-                raise _Http404(f"404 on {url}")
+                raise _Http404(f"404 on {log_url}")
             if status >= 400:
-                print(f"  browser: HTTP {status} on {url}")
+                print(f"  browser: HTTP {status} on {log_url}")
                 return None
             # Wait a bit for JS-rendered content to settle
             page.wait_for_timeout(1500)
             html = page.content()
             captcha_type = detect_captcha(html)
             if captcha_type:
-                raise _CaptchaDetected(f"CAPTCHA ({captcha_type}) on {url}")
+                raise _CaptchaDetected(f"CAPTCHA ({captcha_type}) on {log_url}")
             return html
         except (_Rate429, _Http404, _CaptchaDetected):
             raise
         except Exception as e:
             if _is_browser_dead(e) and _attempt == 0:
-                print(f"  browser: error fetching {url}: {e}")
+                print(f"  browser: error fetching {log_url}: {sanitize_text_for_logging(e)}")
                 try:
                     if page:
                         page.close()
@@ -214,7 +217,7 @@ def browser_fetch(url: str, wait_until: str = "domcontentloaded") -> str | None:
                     pass
                 _restart_browser()
                 continue  # retry with fresh browser
-            print(f"  browser: error fetching {url}: {e}")
+            print(f"  browser: error fetching {log_url}: {sanitize_text_for_logging(e)}")
             return None
         finally:
             try:
@@ -237,6 +240,7 @@ def browser_fetch_rendered(url: str) -> PageContent | None:
     Auto-restarts the browser if it has crashed and retries once.
     """
     global _fetch_count
+    log_url = sanitize_url_for_logging(url)
     _maybe_recycle()
     _fetch_count += 1
     for _attempt in range(2):  # at most one restart
@@ -249,11 +253,11 @@ def browser_fetch_rendered(url: str) -> PageContent | None:
                 return None
             status = response.status
             if status == 429:
-                raise _Rate429(f"429 on {url}")
+                raise _Rate429(f"429 on {log_url}")
             if status == 404:
-                raise _Http404(f"404 on {url}")
+                raise _Http404(f"404 on {log_url}")
             if status >= 400:
-                print(f"  browser: HTTP {status} on {url}")
+                print(f"  browser: HTTP {status} on {log_url}")
                 return None
 
             # Wait for SPA frameworks to hydrate
@@ -265,14 +269,14 @@ def browser_fetch_rendered(url: str) -> PageContent | None:
             html = page.content()
             captcha_type = detect_captcha(html)
             if captcha_type:
-                raise _CaptchaDetected(f"CAPTCHA ({captcha_type}) on {url}")
+                raise _CaptchaDetected(f"CAPTCHA ({captcha_type}) on {log_url}")
             rendered_text = page.inner_text("body")
             return PageContent(html, rendered_text)
         except (_Rate429, _Http404, _CaptchaDetected):
             raise
         except Exception as e:
             if _is_browser_dead(e) and _attempt == 0:
-                print(f"  browser: error fetching {url}: {e}")
+                print(f"  browser: error fetching {log_url}: {sanitize_text_for_logging(e)}")
                 try:
                     if page:
                         page.close()
@@ -280,7 +284,7 @@ def browser_fetch_rendered(url: str) -> PageContent | None:
                     pass
                 _restart_browser()
                 continue  # retry with fresh browser
-            print(f"  browser: error fetching {url}: {e}")
+            print(f"  browser: error fetching {log_url}: {sanitize_text_for_logging(e)}")
             return None
         finally:
             try:
@@ -462,8 +466,8 @@ def save_session(urls: list[str]) -> None:
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=60000)
         except Exception as e:
-            print(f"  Navigation error (may be fine): {e}")
-        print(f"\n  Opened: {url}")
+            print(f"  Navigation error (may be fine): {sanitize_text_for_logging(e)}")
+        print(f"\n  Opened: {sanitize_url_for_logging(url)}")
         print("  >>> Solve CAPTCHA / anti-bot check, browse a few pages <<<")
         print("  >>> Then press Enter here when done with this site...  <<<")
         input()
@@ -545,7 +549,7 @@ def refresh_expired_sessions() -> dict:
                 print(f"  {domain}: auto-refreshed")
         except Exception as e:
             results[domain] = "failed"
-            print(f"  {domain}: refresh failed — {e}")
+            print(f"  {domain}: refresh failed — {sanitize_text_for_logging(e)}")
 
     # Save updated cookies (includes fresh cookies from visited sites)
     ctx.storage_state(path=BROWSER_STATE_PATH)

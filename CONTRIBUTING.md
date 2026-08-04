@@ -18,6 +18,22 @@
   documented.
 - Document new environment variables and provider configuration.
 
+## Phase documentation
+
+For a significant feature or integration phase, add a public task summary and manual test
+suite under `docs/phases/<phase-id>-<short-name>/`. Use stable requirement, acceptance,
+and test IDs so reviewers can trace each behavior to its verification.
+
+Copy the reusable [task-summary](docs/phases/templates/task-summary.md) and
+[manual-test-cases](docs/phases/templates/manual-test-cases.md) templates. Small changes
+that do not alter behavior may mark phase documentation as not applicable in the pull
+request template, with a short reason.
+
+Commit synthetic examples and sanitized results only. Keep credentials, real remote IDs,
+private URLs, raw reports, and customer data local. See
+[`docs/phases/README.md`](docs/phases/README.md) for the directory convention, required
+content, execution statuses, and public/private boundary.
+
 ## Provider contributions
 
 Storage, discovery, and publisher integrations should keep vendor-specific behavior out
