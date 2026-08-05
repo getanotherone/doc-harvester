@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `PIPE-002` |
-| Status | Implemented; pull-request validation pending |
+| Status | Complete; merge pending |
 | Depends on | `CORE-001`, `PIPE-001`, `EXTR-001`, `EXTR-002`, `EXTR-003` |
 | Scope | Provider-neutral metadata enrichment and quality evaluation in `source process` |
 
@@ -146,4 +146,7 @@ Local verification on 2026-08-05:
 - Ruff, diff validation, wheel build/contents, isolated installed-wheel enrichment/quality
   smoke, complete-history Gitleaks (40 commits), and staged public-tree Gitleaks passed.
 
-Pull-request and post-merge evidence will be recorded after those checks finish.
+- PR #16 standalone Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed on
+  implementation commit `b4b8fd4`.
+
+Post-merge evidence will be recorded after merge checks finish.
