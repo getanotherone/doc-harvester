@@ -90,16 +90,23 @@ Built-in processing adapters implement the universal core contracts:
 | Extract | `docx` | OOXML headings, paragraphs, lists, and table rows; bounded expansion |
 | Extract | `xlsx` | Sheet-scoped streamed rows and formulas; hidden sheets excluded by default |
 | Chunk | `structure-aware` | Paragraph, section, table, and normative-aware token bounds |
+| Enrich | `basic` | Neutral source type, language, structure, counts, and SHA-256 metadata |
+| Quality | `basic` | Empty, tiny, duplicate, noisy, and oversized chunk ratios |
 
 ```python
 from doc_harvester.chunkers import create_chunker
 from doc_harvester.extractors import select_extractor
+from doc_harvester.enrichers import create_enricher
+from doc_harvester.quality import create_quality_gate
 ```
 
 The `source process` command connects manifests, automatic HTTP/local fetching, extractor
-selection, and structure-aware chunking. It writes normalized JSON locally and does not
+selection, structure-aware chunking, neutral enrichment, and quality evaluation. It writes
+normalized JSON locally and does not
 persist original bytes, upload, publish, or silently treat unsupported binary formats as
 text. Textless PDFs are reported as requiring OCR rather than invoking external binaries.
+Quality findings are recorded for review by default. `--fail-on-quality` returns non-zero
+after preserving the complete dataset when any processed document fails the configured gate.
 
 ## Storage
 

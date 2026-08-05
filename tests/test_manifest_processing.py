@@ -74,6 +74,8 @@ def test_process_manifest_writes_local_text_and_html_dataset(tmp_path):
     assert report["status"] == "complete"
     assert report["processed_count"] == 2
     assert report["failed_count"] == report["skipped_count"] == 0
+    assert report["quality_failed_count"] == 2
+    assert report["quality_enforced"] is False
     persisted = json.loads((output / "processing-report.json").read_text())
     assert persisted == report
     first_document = json.loads(
@@ -84,14 +86,26 @@ def test_process_manifest_writes_local_text_and_html_dataset(tmp_path):
     )
     assert first_document["extractor"] == "text"
     assert first_document["blocks"]
+    assert first_document["metadata"]["enricher"] == "basic"
+    assert first_document["metadata"]["quality_status"] == "warning"
     assert first_chunks["count"] >= 1
     assert first_chunks["chunks"][0]["text"]
+    assert first_chunks["chunks"][0]["metadata"]["source_type"] == "markdown"
+    assert first_chunks["chunks"][0]["metadata"]["quality_status"] == "warning"
+    quality = json.loads(
+        (output / "documents/00000/quality.json").read_text(encoding="utf-8")
+    )
+    assert quality["quality_gate"] == "basic"
+    assert quality["passed"] is False
+    assert quality["findings"]
     assert sorted(path.name for path in output.rglob("*") if path.is_file()) == [
         "chunks.json",
         "chunks.json",
         "document.json",
         "document.json",
         "processing-report.json",
+        "quality.json",
+        "quality.json",
     ]
 
 
@@ -382,7 +396,37 @@ def test_source_process_cli_runs_local_pipeline(tmp_path, capsys):
     summary = json.loads(capsys.readouterr().out)
     assert summary["status"] == "complete"
     assert summary["processed_count"] == 1
+    assert summary["quality_failed_count"] == 1
+    assert summary["quality_enforced"] is False
     assert summary["output"] == str(output)
+
+
+def test_source_process_cli_can_enforce_quality_without_discarding_output(tmp_path, capsys):
+    root = tmp_path / "sources"
+    root.mkdir()
+    (root / "short.txt").write_text("Too short.", encoding="utf-8")
+    manifest = write_manifest(tmp_path / "manifest.json", [{"uri": "short.txt"}])
+    output = tmp_path / "dataset"
+
+    result = main(
+        [
+            "source",
+            "process",
+            str(manifest),
+            "--root",
+            str(root),
+            "--output",
+            str(output),
+            "--fail-on-quality",
+        ]
+    )
+
+    assert result == 1
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["status"] == "complete"
+    assert summary["quality_enforced"] is True
+    assert summary["quality_failed_count"] == 1
+    assert (output / "documents/00000/quality.json").is_file()
 
 
 @pytest.mark.parametrize(
@@ -400,11 +444,30 @@ def test_source_process_cli_runs_local_pipeline(tmp_path, capsys):
         "--max-xlsx-rows",
         "--max-xlsx-cells",
         "--max-xlsx-uncompressed-bytes",
+        "--quality-min-tokens",
     ],
 )
 def test_source_process_cli_rejects_non_positive_bounds(option):
     with pytest.raises(SystemExit) as caught:
         build_parser().parse_args(
             ["source", "process", "manifest.json", "--output", "dataset", option, "0"]
+        )
+    assert caught.value.code == 2
+
+
+@pytest.mark.parametrize(
+    "option",
+    [
+        "--quality-max-empty-ratio",
+        "--quality-max-tiny-ratio",
+        "--quality-max-duplicate-ratio",
+        "--quality-max-noisy-ratio",
+        "--quality-max-oversized-ratio",
+    ],
+)
+def test_source_process_cli_rejects_quality_ratios_outside_unit_interval(option):
+    with pytest.raises(SystemExit) as caught:
+        build_parser().parse_args(
+            ["source", "process", "manifest.json", "--output", "dataset", option, "1.1"]
         )
     assert caught.value.code == 2

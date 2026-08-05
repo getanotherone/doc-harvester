@@ -87,6 +87,12 @@ bounded OOXML main-body content without extracting archives to disk or inventing
 The XLSX adapter streams visible worksheets, retains formulas without evaluation, and
 requires explicit opt-in for hidden sheets.
 
+After chunking, the pipeline applies the neutral `basic` metadata enricher and quality gate.
+Enrichment adds source/language/structure/count/hash metadata without vendor or domain
+classification. The gate records empty, tiny, duplicate, noisy, and oversized ratios in a
+per-document `quality.json`. Findings remain visible in a successfully published dataset;
+operators may opt into a non-zero exit status with `--fail-on-quality`.
+
 ## Reliability controls
 
 - Streaming downloads avoid loading large responses into memory.

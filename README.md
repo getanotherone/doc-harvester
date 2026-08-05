@@ -58,8 +58,12 @@ doc-harvester source discover sitemap https://example.com/sitemap.xml \
 # Fetch one selected resource into an explicit file
 doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
 
-# Process a reviewed manifest into a new local text/HTML/XML/PDF/DOCX/XLSX chunk dataset
+# Process a reviewed manifest, enrich it, and write quality reports
 doc-harvester source process discovery.json --root . --output /tmp/dataset
+
+# Use the same review output, but return non-zero when quality checks fail
+doc-harvester source process discovery.json --root . --output /tmp/strict-dataset \
+  --fail-on-quality
 
 # Crawl locally without uploading
 doc-harvester crawl https://example.com/catalog/ --no-upload
@@ -147,6 +151,11 @@ other vendor adapters are not imported by this core package.
 Credential-free manual/sitemap discovery and HTTP/local-file fetchers are available under
 `doc_harvester.discovery` and `doc_harvester.fetchers`. The additive `source` CLI exposes
 them without changing the legacy crawl and provider-search orchestration.
+
+Provider-neutral basic enrichment and quality adapters are available under
+`doc_harvester.enrichers` and `doc_harvester.quality`. `source process` writes a
+`quality.json` beside each processed document. Quality findings are review-only by default;
+`--fail-on-quality` changes the command exit status without deleting the review dataset.
 
 ## Development
 

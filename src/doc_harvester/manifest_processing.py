@@ -11,9 +11,17 @@ from typing import Any, Callable
 from urllib.parse import urlsplit
 
 from doc_harvester.chunkers import create_chunker
-from doc_harvester.core import ChunkingOptions, FetchedArtifact, ResourceRef
+from doc_harvester.core import (
+    Chunk,
+    ChunkingOptions,
+    ExtractedDocument,
+    FetchedArtifact,
+    ResourceRef,
+)
+from doc_harvester.enrichers import create_enricher
 from doc_harvester.extractors import select_extractor
 from doc_harvester.fetchers import FetchError, create_fetcher
+from doc_harvester.quality import create_quality_gate
 
 
 DEFAULT_MAX_MANIFEST_BYTES = 5 * 1024 * 1024
@@ -145,6 +153,42 @@ def _chunks_payload(document_uri: str, chunker_name: str, chunks) -> dict:
     }
 
 
+def _quality_payload(gate_name: str, report) -> dict:
+    return {
+        "schema_version": 1,
+        "quality_gate": gate_name,
+        "passed": report.passed,
+        "findings": [
+            {
+                "code": finding.code,
+                "severity": finding.severity,
+                "message": finding.message,
+                "metadata": dict(finding.metadata),
+            }
+            for finding in report.findings
+        ],
+        "metrics": dict(report.metrics),
+    }
+
+
+def _with_quality_status(document, chunks, *, passed: bool):
+    status = "passed" if passed else "warning"
+    enriched_document = ExtractedDocument(
+        document.resource,
+        document.blocks,
+        metadata={**document.metadata, "quality_status": status},
+    )
+    enriched_chunks = tuple(
+        Chunk(
+            chunk.text,
+            chunk.index,
+            metadata={**chunk.metadata, "quality_status": status},
+        )
+        for chunk in chunks
+    )
+    return enriched_document, enriched_chunks
+
+
 def process_manifest(
     manifest_path: str | Path,
     output: str | Path,
@@ -163,8 +207,17 @@ def process_manifest(
     max_xlsx_cells: int = 2_000_000,
     max_xlsx_uncompressed_bytes: int = 250 * 1024 * 1024,
     include_hidden_xlsx_sheets: bool = False,
+    quality_min_tokens: int = 20,
+    quality_max_empty_ratio: float = 0.0,
+    quality_max_tiny_ratio: float = 0.8,
+    quality_max_duplicate_ratio: float = 0.25,
+    quality_max_noisy_ratio: float = 0.1,
+    quality_max_oversized_ratio: float = 0.0,
+    fail_on_quality: bool = False,
     fetcher_builder: Callable[..., Any] | None = None,
     extractor_selector: Callable[[FetchedArtifact], Any] | None = None,
+    metadata_enricher: Any | None = None,
+    quality_gate: Any | None = None,
 ) -> dict:
     """Process supported resources and atomically publish a local dataset directory."""
     if limit < 1:
@@ -189,6 +242,17 @@ def process_manifest(
         raise ValueError("XLSX max cells must be at least 1")
     if max_xlsx_uncompressed_bytes < 1:
         raise ValueError("XLSX max uncompressed bytes must be at least 1")
+    if quality_min_tokens < 1:
+        raise ValueError("quality minimum tokens must be at least 1")
+    for name, value in (
+        ("empty", quality_max_empty_ratio),
+        ("tiny", quality_max_tiny_ratio),
+        ("duplicate", quality_max_duplicate_ratio),
+        ("noisy", quality_max_noisy_ratio),
+        ("oversized", quality_max_oversized_ratio),
+    ):
+        if not 0.0 <= value <= 1.0:
+            raise ValueError(f"quality {name} ratio must be between 0 and 1")
 
     destination = Path(output)
     if destination.exists() or destination.is_symlink():
@@ -198,6 +262,16 @@ def process_manifest(
     build_fetcher = fetcher_builder or create_fetcher
     choose_extractor = extractor_selector or select_extractor
     chunker = create_chunker("structure-aware")
+    enricher = metadata_enricher or create_enricher("basic")
+    gate = quality_gate or create_quality_gate(
+        "basic",
+        min_tokens=quality_min_tokens,
+        max_empty_ratio=quality_max_empty_ratio,
+        max_tiny_ratio=quality_max_tiny_ratio,
+        max_duplicate_ratio=quality_max_duplicate_ratio,
+        max_noisy_ratio=quality_max_noisy_ratio,
+        max_oversized_ratio=quality_max_oversized_ratio,
+    )
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(
@@ -270,6 +344,16 @@ def process_manifest(
                 )
                 if not chunks:
                     raise ValueError("chunking produced no chunks")
+                enrichment = enricher.enrich(document, chunks)
+                quality_report = gate.evaluate(
+                    enrichment.document,
+                    enrichment.chunks,
+                )
+                document, chunks = _with_quality_status(
+                    enrichment.document,
+                    enrichment.chunks,
+                    passed=quality_report.passed,
+                )
 
                 relative_directory = Path("documents") / f"{index:05d}"
                 document_directory = staging / relative_directory
@@ -281,6 +365,10 @@ def process_manifest(
                     document_directory / "chunks.json",
                     _chunks_payload(resource.uri, chunker.name, chunks),
                 )
+                _write_json(
+                    document_directory / "quality.json",
+                    _quality_payload(gate.name, quality_report),
+                )
                 outcomes.append(
                     {
                         **base_outcome,
@@ -289,6 +377,9 @@ def process_manifest(
                         "extractor": extractor.name,
                         "blocks": len(document.blocks),
                         "chunks": len(chunks),
+                        "enricher": enricher.name,
+                        "quality_gate": gate.name,
+                        "quality_passed": quality_report.passed,
                         "directory": relative_directory.as_posix(),
                     }
                 )
@@ -310,6 +401,10 @@ def process_manifest(
         processed_count = sum(item["status"] == "processed" for item in outcomes)
         skipped_count = sum(item["status"] == "skipped" for item in outcomes)
         failed_count = sum(item["status"] == "failed" for item in outcomes)
+        quality_failed_count = sum(
+            item["status"] == "processed" and not item.get("quality_passed", False)
+            for item in outcomes
+        )
         report = {
             "schema_version": 1,
             "manifest": Path(manifest_path).name,
@@ -318,6 +413,8 @@ def process_manifest(
             "processed_count": processed_count,
             "skipped_count": skipped_count,
             "failed_count": failed_count,
+            "quality_failed_count": quality_failed_count,
+            "quality_enforced": fail_on_quality,
             "status": (
                 "failed"
                 if processed_count == 0

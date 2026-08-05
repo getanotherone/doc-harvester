@@ -20,6 +20,8 @@
 - [EXTR-002 manual test cases](phases/EXTR-002-docx/manual-test-cases.md)
 - [EXTR-003 — Bounded XLSX extraction](phases/EXTR-003-xlsx/task-summary.md)
 - [EXTR-003 manual test cases](phases/EXTR-003-xlsx/manual-test-cases.md)
+- [PIPE-002 — Neutral enrichment and quality gates](phases/PIPE-002-enrichment-quality/task-summary.md)
+- [PIPE-002 manual test cases](phases/PIPE-002-enrichment-quality/manual-test-cases.md)
 
 ## Operations and security
 

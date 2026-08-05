@@ -30,6 +30,7 @@ def test_root_env_example_has_universal_safe_defaults():
     assert values["SEARCH_DISCOVERY_ENABLED"] == "0"
     assert values["ELECTRICAL_ONLY"] == "0"
     assert values["DOC_HARVESTER_XLSX_INCLUDE_HIDDEN"] == "0"
+    assert values["DOC_HARVESTER_FAIL_ON_QUALITY"] == "0"
     assert "DOC_HARVESTER_PROFILE" not in values
     assert "change-me" not in EXAMPLE.read_text(encoding="utf-8")
 
@@ -78,6 +79,13 @@ def test_root_env_example_covers_the_public_standalone_surface():
         "DOC_HARVESTER_MAX_XLSX_CELLS",
         "DOC_HARVESTER_MAX_XLSX_UNCOMPRESSED_BYTES",
         "DOC_HARVESTER_XLSX_INCLUDE_HIDDEN",
+        "DOC_HARVESTER_QUALITY_MIN_TOKENS",
+        "DOC_HARVESTER_QUALITY_MAX_EMPTY_RATIO",
+        "DOC_HARVESTER_QUALITY_MAX_TINY_RATIO",
+        "DOC_HARVESTER_QUALITY_MAX_DUPLICATE_RATIO",
+        "DOC_HARVESTER_QUALITY_MAX_NOISY_RATIO",
+        "DOC_HARVESTER_QUALITY_MAX_OVERSIZED_RATIO",
+        "DOC_HARVESTER_FAIL_ON_QUALITY",
         "SCRAPPER_API_KEY",
         "S3_BUCKET",
         "NOTION_TOKEN",
