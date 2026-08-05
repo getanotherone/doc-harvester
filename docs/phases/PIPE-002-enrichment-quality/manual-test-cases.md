@@ -11,7 +11,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `PIPE-002-TC-03` | Keep default quality findings advisory | Critical | Passed by automation |
 | `PIPE-002-TC-04` | Enforce quality without losing evidence | Critical | Passed by automation |
 | `PIPE-002-TC-05` | Verify public API and configuration | High | Passed |
-| `PIPE-002-TC-06` | Complete regression and release validation | Critical | Passed; post-merge pending |
+| `PIPE-002-TC-06` | Complete regression and release validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -205,10 +205,10 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed; post-merge pending
+- **Status:** Passed
 - **Executed:** 2026-08-05
 - **Tester:** Automation
-- **Actual Result:** Ruff, 209 standalone tests, 107 DocProc tests, wheel build/contents/import/smoke, diff validation, 40-commit history scan, staged public-tree scan, and PR Python 3.11/3.12, DocProc, secrets, and CodeQL pass; post-merge checks are pending.
+- **Actual Result:** Ruff, 209 standalone tests, 107 DocProc tests, wheel build/contents/import/smoke, diff validation, 40-commit history scan, staged public-tree scan, and PR Python 3.11/3.12, DocProc, secrets, and CodeQL passed; PR #16 merged as `6d8c8bf`.
 - **Evidence:** Local validation output; [PR #16](https://github.com/getanotherone/doc-harvester/pull/16)
 - **Issue:** Not applicable
 

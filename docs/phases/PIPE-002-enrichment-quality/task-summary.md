@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `PIPE-002` |
-| Status | Complete; merge pending |
+| Status | Complete |
 | Depends on | `CORE-001`, `PIPE-001`, `EXTR-001`, `EXTR-002`, `EXTR-003` |
 | Scope | Provider-neutral metadata enrichment and quality evaluation in `source process` |
 
@@ -101,7 +101,7 @@ and enforcement policy for automation logs.
 - Exact normalized duplicate text with different whitespace or case.
 - OCR-like CID/replacement-character noise and symbol-heavy content.
 - Table chunks containing many symbols but valid structured data.
-- A protected structure-aware chunk above the nominal token limit.
+- Long protected or unpunctuated input that must split at the absolute token limit.
 - Ratios exactly at the configured limit versus above it.
 - Mixed manifests where quality fails, extraction fails, or both occur.
 - Report-only and enforced execution using the same inputs and retained output.
@@ -149,4 +149,5 @@ Local verification on 2026-08-05:
 - PR #16 standalone Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed on
   implementation commit `b4b8fd4`.
 
-Post-merge evidence will be recorded after merge checks finish.
+PR #16 was squash-merged as `6d8c8bf`; subsequent full regression and E2E release checks
+continue to cover enrichment and quality behavior.

@@ -5,22 +5,33 @@ the first stable release.
 
 ## [Unreleased]
 
-### Changed
+No unreleased changes.
 
-- Upgrade `requests` to 2.33.0 and the pytest stack to `pytest` 9.0.3 with `pytest-asyncio` 1.4.0 to address dependency security advisories.
+## [0.2.0] - 2026-08-06
 
 ### Added
 
-- Confluence Cloud and Notion documentation publisher adapters.
-- Publisher plugin discovery through the `doc_harvester.publishers` entry-point group.
-- Storage provider contract with local, S3-compatible, and Yandex Disk adapters.
-- Publisher contract with local Markdown and Yandex Wiki adapters.
-- Dependency-free profile validation plus a public JSON Schema.
-- CLI provider selection, profile validation, and artifact publishing commands.
+- Provider-neutral core contracts and credential-free discovery, crawling, fetching,
+  extraction, chunking, enrichment, quality, storage, and publishing adapters.
+- Review-gated `source` CLI workflow with versioned manifests and datasets.
+- Digital-text PDF, structure-aware DOCX, bounded XLSX, HTML/XML, and text processing.
+- Safe local storage, dataset inventory, Markdown rendering, and dry-run-first publication.
+- Credential-free golden path covering the complete local workflow.
+- Confluence Cloud and Notion publisher adapters plus publisher plugin discovery.
+- S3-compatible storage and secure AWS testing guidance.
 
-### Planned
+### Changed
 
-- A smaller, dependency-light core package.
+- Playwright and OCR Python libraries are optional `browser`, `ocr`, or `legacy` extras
+  instead of default dependencies.
+- CI now builds and installs the wheel in a clean environment and runs an installed-package
+  golden-path smoke test.
+- Upgrade `requests` to 2.33.0 and the pytest stack to pytest 9.0.3.
+
+### Security
+
+- Sanitized public history, repeatable Gitleaks CI, URL redaction, bounded network and file
+  processing, robots-aware crawling, and explicit overwrite/apply permissions.
 
 ## [0.1.0] - 2026-07-13
 

@@ -66,3 +66,42 @@ jobs:
         env:
           PYTHONPATH: services/doc_proc/backend/src
         run: python -m pytest -q services/doc_proc/tests
+
+  wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Build wheel
+        run: python -m pip wheel --no-deps --wheel-dir dist .
+      - name: Install wheel in a clean environment
+        run: |
+          python -m venv /tmp/doc-harvester-wheel
+          /tmp/doc-harvester-wheel/bin/python -m pip install dist/*.whl
+          /tmp/doc-harvester-wheel/bin/doc-harvester --version
+          /tmp/doc-harvester-wheel/bin/doc-harvester demo \
+            --output /tmp/doc-harvester-wheel-demo.json
+          /tmp/doc-harvester-wheel/bin/python -c \
+            "import importlib.util; assert importlib.util.find_spec('playwright') is None"
+      - name: Run installed-wheel golden-path smoke
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 \
+            --directory examples/golden-path/site &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          curl --fail --silent --retry 5 --retry-connrefused --retry-delay 1 \
+            http://127.0.0.1:8765/ >/dev/null
+          /tmp/doc-harvester-wheel/bin/doc-harvester source crawl \
+            http://127.0.0.1:8765/ --delay 0 --limit 20 \
+            --output /tmp/doc-harvester-wheel-crawl.json
+          /tmp/doc-harvester-wheel/bin/doc-harvester source process \
+            /tmp/doc-harvester-wheel-crawl.json \
+            --output /tmp/doc-harvester-wheel-dataset
+          /tmp/doc-harvester-wheel/bin/doc-harvester source inspect \
+            /tmp/doc-harvester-wheel-dataset \
+            > /tmp/doc-harvester-wheel-inspection.json
+          /tmp/doc-harvester-wheel/bin/python -c \
+            "import json; p=json.load(open('/tmp/doc-harvester-wheel-inspection.json')); assert p['processed_count'] == 4"

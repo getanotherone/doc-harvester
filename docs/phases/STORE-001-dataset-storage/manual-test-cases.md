@@ -11,7 +11,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `STORE-001-TC-03` | Protect an existing destination | Critical | Passed by automation |
 | `STORE-001-TC-04` | Verify public CLI and configuration | High | Passed by automation |
 | `STORE-001-TC-05` | Exercise S3-compatible adapter contract | High | Passed by automation |
-| `STORE-001-TC-06` | Complete regression and release validation | Critical | Passed; post-merge pending |
+| `STORE-001-TC-06` | Complete regression and release validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -208,10 +208,10 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed; post-merge pending
+- **Status:** Passed
 - **Executed:** 2026-08-05
 - **Tester:** Automation
-- **Actual Result:** Ruff, 54 focused tests, 226 standalone tests, 107 DocProc tests, wheel build/contents, installed discover/process/store smoke, diff validation, 43-commit history scan, staged public-tree scan, and PR Python 3.11/3.12, DocProc, secrets, and CodeQL pass; post-merge checks are pending.
+- **Actual Result:** Ruff, 54 focused tests, 226 standalone tests, 107 DocProc tests, wheel build/contents, installed discover/process/store smoke, diff validation, 43-commit history scan, staged public-tree scan, and PR Python 3.11/3.12, DocProc, secrets, and CodeQL passed; PR #17 merged as `ee97435`.
 - **Evidence:** Local validation output; [PR #17](https://github.com/getanotherone/doc-harvester/pull/17)
 - **Issue:** Not applicable
 

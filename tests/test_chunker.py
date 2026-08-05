@@ -84,9 +84,25 @@ def test_chunk_blocks_basic():
 def test_chunk_blocks_token_limit():
     blocks = [_make_block(f"Paragraph {i}. " * 10) for i in range(10)]
     result = chunk_blocks_v2(blocks, target_tokens=100, max_tokens=200)
-    for chunk in result["chunks"]:
-        if not chunk.get("oversized"):
-            assert chunk["token_count"] <= 200
+    assert all(chunk["token_count"] <= 200 for chunk in result["chunks"])
+    assert all(chunk.get("oversized") is False for chunk in result["chunks"])
+
+
+def test_chunk_blocks_splits_long_unpunctuated_and_normative_blocks():
+    unpunctuated = _make_block("technical " * 200)
+    normative = _make_block("1.1 " + ("requirement " * 200))
+    long_lexical_token = _make_block("абвгд" * 500)
+
+    result = chunk_blocks_v2(
+        [unpunctuated, normative, long_lexical_token],
+        target_tokens=40,
+        max_tokens=50,
+    )
+
+    assert len(result["chunks"]) > 2
+    assert all(chunk["token_count"] <= 50 for chunk in result["chunks"])
+    assert result["stats"]["oversized_chunks"] == 0
+    assert result["stats"]["token_limit_violations"] == 0
 
 
 def test_chunk_blocks_table_protected():

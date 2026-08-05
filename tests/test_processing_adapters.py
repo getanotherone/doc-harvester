@@ -117,10 +117,8 @@ def test_structure_aware_chunker_returns_indexed_bounded_chunks():
     assert [chunk.index for chunk in chunks] == list(range(len(chunks)))
     assert len(chunks) > 1
     assert all(chunk.text for chunk in chunks)
-    assert all(
-        chunk.metadata["token_count"] <= 80 or chunk.metadata["oversized"]
-        for chunk in chunks
-    )
+    assert all(chunk.metadata["token_count"] <= 80 for chunk in chunks)
+    assert all(chunk.metadata["oversized"] is False for chunk in chunks)
     assert chunks[0].metadata["page"] == 1
 
 

@@ -26,6 +26,15 @@ def _configure_profile(scraper, name: str) -> None:
 
 
 def _run_crawl(args: argparse.Namespace) -> int:
+    if args.spa:
+        try:
+            import playwright  # noqa: F401
+        except ImportError:
+            print(
+                "crawl failed: SPA mode requires: pip install 'doc-harvester[browser]'",
+                file=sys.stderr,
+            )
+            return 1
     import scraper
 
     _configure_profile(scraper, args.profile)
