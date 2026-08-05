@@ -11,7 +11,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `CRAWL-001-TC-03` | Enforce traversal/filter/resource bounds | Critical | Passed by automation |
 | `CRAWL-001-TC-04` | Block redirect escape before request | Critical | Passed by automation |
 | `CRAWL-001-TC-05` | Verify CLI, output, configuration, and processing handoff | High | Passed |
-| `CRAWL-001-TC-06` | Complete regression and release validation | Critical | Passed locally; PR pending |
+| `CRAWL-001-TC-06` | Complete regression and release validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -205,11 +205,11 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed locally; PR and post-merge pending
+- **Status:** Passed
 - **Executed:** 2026-08-05
 - **Tester:** Automation
 - **Actual Result:** Ruff, 60 focused tests, 260 standalone tests, 107 DocProc tests, wheel build/contents/extracted-wheel smoke, diff validation, and 52-commit history scan passed.
-- **Evidence:** Local verification output; public CI link pending
+- **Evidence:** Local verification output and public PR #21 checks; squash merge `20d9742`
 
 ## Automated coverage references
 
