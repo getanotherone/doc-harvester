@@ -49,6 +49,9 @@ flag with the corresponding name takes precedence.
 | `DOC_HARVESTER_MAX_FETCH_BYTES` | `52428800` | `--max-bytes`; maximum fetched bytes |
 | `DOC_HARVESTER_HTTP_TIMEOUT` | `30` | `--timeout`; positive HTTP timeout in seconds |
 | `DOC_HARVESTER_MAX_MANIFEST_BYTES` | `5242880` | `--max-manifest-bytes`; processing-manifest bound |
+| `DOC_HARVESTER_MAX_PUBLICATION_DOCUMENT_BYTES` | `10485760` | `source render --max-document-bytes`; selected document JSON bound |
+| `DOC_HARVESTER_MAX_PUBLICATION_BYTES` | `10485760` | `source render --max-publication-bytes`; rendered Markdown bound |
+| `DOC_HARVESTER_MAX_PUBLICATION_BLOCKS` | `10000` | `source render --max-blocks`; normalized block bound |
 | `DOC_HARVESTER_MAX_CHUNK_TOKENS` | `800` | `--max-tokens`; absolute processing chunk bound |
 | `DOC_HARVESTER_MAX_PDF_PAGES` | `1000` | `--max-pdf-pages`; maximum pages accepted from one PDF |
 | `DOC_HARVESTER_MAX_DOCX_BLOCKS` | `10000` | `--max-docx-blocks`; maximum normalized blocks from one DOCX |
@@ -148,6 +151,18 @@ doc-harvester source store /tmp/doc-harvester-dataset \
 document/chunk/quality files, rejects symbolic links and unsafe paths, and protects existing
 objects by default. `--overwrite` is required to replace them. The processing report is
 bounded by `DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES` (default 5 MiB).
+
+Render one reviewed document for publication:
+
+```bash
+doc-harvester source render /tmp/doc-harvester-dataset \
+  --document-index 0 --output /tmp/review.md
+```
+
+Source URI is omitted unless `--include-source-uri` is supplied after checking it for private
+query parameters. Existing output requires `--overwrite`. Review the Markdown before using
+`publish`; publication is dry-run by default and an existing destination requires
+`--apply --update-existing`.
 
 ## Storage controls
 

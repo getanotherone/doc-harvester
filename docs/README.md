@@ -24,6 +24,8 @@
 - [PIPE-002 manual test cases](phases/PIPE-002-enrichment-quality/manual-test-cases.md)
 - [STORE-001 — Validated dataset storage](phases/STORE-001-dataset-storage/task-summary.md)
 - [STORE-001 manual test cases](phases/STORE-001-dataset-storage/manual-test-cases.md)
+- [PUB-002 — Reviewed dataset publication](phases/PUB-002-reviewed-dataset-publication/task-summary.md)
+- [PUB-002 manual test cases](phases/PUB-002-reviewed-dataset-publication/manual-test-cases.md)
 
 ## Operations and security
 

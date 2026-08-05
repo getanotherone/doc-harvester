@@ -88,3 +88,31 @@ def test_local_storage_and_publisher_commands(tmp_path):
         ]
     ) == 0
     assert (publish_root / "guide/start.md").read_text() == "guide"
+
+
+def test_publish_requires_explicit_permission_to_update_existing_destination(
+    tmp_path, capsys
+):
+    source = tmp_path / "guide.md"
+    source.write_text("new", encoding="utf-8")
+    publish_root = tmp_path / "published"
+    destination = publish_root / "guide/start.md"
+    destination.parent.mkdir(parents=True)
+    destination.write_text("keep", encoding="utf-8")
+    command = [
+        "publish",
+        str(source),
+        "guide/start",
+        "--publisher",
+        "local",
+        "--local-root",
+        str(publish_root),
+        "--apply",
+    ]
+
+    assert main(command) == 1
+    assert "--update-existing" in capsys.readouterr().err
+    assert destination.read_text(encoding="utf-8") == "keep"
+
+    assert main([*command, "--update-existing"]) == 0
+    assert destination.read_text(encoding="utf-8") == "new"

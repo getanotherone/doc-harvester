@@ -64,6 +64,17 @@ def test_parser_exposes_credential_free_source_commands():
             "review/run-1",
         ]
     )
+    render = parser.parse_args(
+        [
+            "source",
+            "render",
+            "/tmp/dataset",
+            "--document-index",
+            "0",
+            "--output",
+            "/tmp/review.md",
+        ]
+    )
 
     assert (manual.command, manual.source_command, manual.discovery_mode) == (
         "source",
@@ -78,6 +89,10 @@ def test_parser_exposes_credential_free_source_commands():
     assert store.source_command == "store"
     assert store.storage == "local"
     assert store.overwrite is False
+    assert render.source_command == "render"
+    assert render.document_index == 0
+    assert render.include_source_uri is False
+    assert render.overwrite is False
 
 
 def test_store_parser_exposes_non_secret_s3_connection_overrides():

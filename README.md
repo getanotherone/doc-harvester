@@ -69,6 +69,10 @@ doc-harvester source process discovery.json --root . --output /tmp/strict-datase
 doc-harvester source store /tmp/dataset --storage local \
   --local-root /tmp/doc-harvester-storage --destination manual-test/run-001
 
+# Render one selected dataset document into Markdown for human review
+doc-harvester source render /tmp/dataset --document-index 0 \
+  --output /tmp/review.md
+
 # Crawl locally without uploading
 doc-harvester crawl https://example.com/catalog/ --no-upload
 
@@ -91,8 +95,10 @@ doc-harvester profile validate electrical
 doc-harvester profile list
 
 # Preview or apply publication of one Markdown artifact
-doc-harvester publish README.md docs/readme
-doc-harvester publish README.md docs/readme --apply
+doc-harvester publish /tmp/review.md docs/review
+doc-harvester publish /tmp/review.md docs/review --apply
+# Replacing an existing destination requires both permissions
+doc-harvester publish /tmp/review.md docs/review --apply --update-existing
 
 # Run the optional API
 python -m pip install -e '.[api]'
@@ -165,6 +171,11 @@ The provider-neutral `source store` command validates version-1 dataset structur
 using a `StorageBackend`. It requires an explicit destination, rejects symbolic links, and
 preserves existing objects unless `--overwrite` is supplied. Start with local storage before
 testing an optional S3-compatible service.
+
+`source render` connects one selected processed document to the publication workflow without
+automatically publishing it. Source URIs are excluded by default, output is bounded and
+atomic, and the result must be reviewed before the dry-run-first `publish` command. Applying
+an update to an existing destination additionally requires `--update-existing`.
 
 ## Development
 

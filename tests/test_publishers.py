@@ -1,5 +1,7 @@
 import pytest
 
+import doc_harvester.publishers.local as local_module
+
 from doc_harvester.publishers import (
     ConfluencePublisher,
     LocalPublisher,
@@ -24,6 +26,47 @@ def test_local_publisher_dry_run_and_apply(tmp_path):
     assert preview.status == "would_create"
     assert result.status == "published"
     assert (tmp_path / "published/guides/start.md").read_text() == "# Documentation\n"
+
+
+def test_local_publisher_rejects_symlink_source_and_destination(tmp_path):
+    source = tmp_path / "source.md"
+    source.write_text("content", encoding="utf-8")
+    linked_source = tmp_path / "linked-source.md"
+    linked_source.symlink_to(source)
+    publisher = LocalPublisher(tmp_path / "published")
+
+    with pytest.raises(FileNotFoundError):
+        publisher.publish(PublishRequest(linked_source, "guides/start"))
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (tmp_path / "published").mkdir()
+    (tmp_path / "published/linked").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match="symbolic link"):
+        publisher.publish(PublishRequest(source, "linked/start"))
+
+
+def test_local_publisher_atomic_failure_preserves_existing_destination(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "source.md"
+    source.write_text("new", encoding="utf-8")
+    destination = tmp_path / "published/guide.md"
+    destination.parent.mkdir()
+    destination.write_text("keep", encoding="utf-8")
+    publisher = LocalPublisher(tmp_path / "published")
+
+    def fail_copy(source_path, temporary_path):
+        del source_path
+        temporary_path.write_text("partial", encoding="utf-8")
+        raise OSError("copy failed")
+
+    monkeypatch.setattr(local_module.shutil, "copy2", fail_copy)
+    with pytest.raises(OSError, match="copy failed"):
+        publisher.publish(PublishRequest(source, "guide"), dry_run=False)
+
+    assert destination.read_text(encoding="utf-8") == "keep"
+    assert not list(destination.parent.glob(".guide.md.*.tmp"))
 
 
 class FakeResponse:

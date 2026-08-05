@@ -32,6 +32,9 @@ def test_root_env_example_has_universal_safe_defaults():
     assert values["DOC_HARVESTER_XLSX_INCLUDE_HIDDEN"] == "0"
     assert values["DOC_HARVESTER_FAIL_ON_QUALITY"] == "0"
     assert values["DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES"] == "5242880"
+    assert values["DOC_HARVESTER_MAX_PUBLICATION_DOCUMENT_BYTES"] == "10485760"
+    assert values["DOC_HARVESTER_MAX_PUBLICATION_BYTES"] == "10485760"
+    assert values["DOC_HARVESTER_MAX_PUBLICATION_BLOCKS"] == "10000"
     assert "DOC_HARVESTER_PROFILE" not in values
     assert "change-me" not in EXAMPLE.read_text(encoding="utf-8")
 
@@ -63,6 +66,9 @@ def test_root_env_example_covers_the_public_standalone_surface():
         "DOC_HARVESTER_STORAGE",
         "DOC_HARVESTER_LOCAL_STORAGE_ROOT",
         "DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES",
+        "DOC_HARVESTER_MAX_PUBLICATION_DOCUMENT_BYTES",
+        "DOC_HARVESTER_MAX_PUBLICATION_BYTES",
+        "DOC_HARVESTER_MAX_PUBLICATION_BLOCKS",
         "DOC_HARVESTER_PUBLISHER",
         "DOC_HARVESTER_PUBLISH_ROOT",
         "DOC_HARVESTER_PROFILE",

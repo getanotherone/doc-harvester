@@ -37,6 +37,13 @@ def _positive_int(value: str) -> int:
     return parsed
 
 
+def _non_negative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("value cannot be negative")
+    return parsed
+
+
 def _positive_float(value: str) -> float:
     parsed = float(value)
     if parsed <= 0:
@@ -389,6 +396,40 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
     )
     store.set_defaults(handler=_run_store)
 
+    render = source_commands.add_parser(
+        "render", help="Render one processed dataset document for publication review"
+    )
+    render.add_argument("dataset", help="Local version-1 processed dataset directory")
+    render.add_argument("--document-index", required=True, type=_non_negative_int)
+    render.add_argument("--output", required=True, help="Explicit Markdown output file")
+    render.add_argument("--title", default="", help="Publication title override")
+    render.add_argument(
+        "--include-source-uri",
+        action="store_true",
+        help="Include the source URI after reviewing it for secrets",
+    )
+    render.add_argument(
+        "--max-document-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_PUBLICATION_DOCUMENT_BYTES", 10 * 1024 * 1024
+        ),
+    )
+    render.add_argument(
+        "--max-publication-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_PUBLICATION_BYTES", 10 * 1024 * 1024
+        ),
+    )
+    render.add_argument(
+        "--max-blocks",
+        type=_positive_int,
+        default=_environment_default("DOC_HARVESTER_MAX_PUBLICATION_BLOCKS", 10_000),
+    )
+    render.add_argument("--overwrite", action="store_true")
+    render.set_defaults(handler=_run_render)
+
 
 def _resource_payload(resource: ResourceRef) -> dict[str, object]:
     return {
@@ -463,6 +504,29 @@ def _run_store(args: argparse.Namespace) -> int:
         print(f"source storage failed: {error}", file=sys.stderr)
         return 1
     _emit_json(result.to_dict())
+    return 0
+
+
+def _run_render(args: argparse.Namespace) -> int:
+    from doc_harvester.dataset_publication import render_dataset_document
+    from doc_harvester.dataset_storage import DatasetValidationError
+
+    try:
+        result = render_dataset_document(
+            args.dataset,
+            args.output,
+            document_index=args.document_index,
+            title=args.title,
+            include_source_uri=args.include_source_uri,
+            overwrite=args.overwrite,
+            max_document_bytes=args.max_document_bytes,
+            max_publication_bytes=args.max_publication_bytes,
+            max_blocks=args.max_blocks,
+        )
+    except (DatasetValidationError, OSError, ValueError) as error:
+        print(f"source rendering failed: {error}", file=sys.stderr)
+        return 1
+    _emit_json(result)
     return 0
 
 

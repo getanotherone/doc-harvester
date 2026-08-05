@@ -138,6 +138,19 @@ The destination is mandatory and provider-relative. Existing objects are protect
 default; `--overwrite` is explicit. S3-compatible endpoints use the same command after
 installing the `s3` extra and configuring bucket, endpoint, region, and credentials.
 
+To prepare one stored/reviewed dataset document for a publisher, render it to an explicit
+local Markdown file first:
+
+```bash
+doc-harvester source render /tmp/dataset --document-index 0 \
+  --output /tmp/review.md
+doc-harvester publish /tmp/review.md guides/review --publisher local
+```
+
+Inspect the Markdown, then add `--apply` to create the destination. If preview reports
+`would_update`, replacement also requires `--update-existing`. Source URIs are excluded from
+rendered Markdown unless explicitly requested.
+
 ## Publishers
 
 All documentation adapters implement `Publisher`. They accept a `PublishRequest`, return a
