@@ -38,6 +38,8 @@
 - [Notion dry-run](notion-dry-run.md): connect one page and verify access without changing it.
 - [S3-compatible test connection](s3-testing.md): start locally, then test a scoped
   Cloudflare R2 bucket with cleanup steps.
+- [AWS S3 Free Plan connection](aws-s3-testing.md): secure a new AWS account, configure a
+  private bucket and least-privilege test identity, upload a dataset, and clean up.
 - [Phase documentation](phases/README.md): public task summaries, manual tests, and
   privacy-safe evidence conventions, including reusable templates.
 - [PUB-001 Notion publishing validation](phases/PUB-001-notion-publishing-validation/task-summary.md):
