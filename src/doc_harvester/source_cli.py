@@ -341,6 +341,36 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
     )
     process.set_defaults(handler=_run_process)
 
+    inspect = source_commands.add_parser(
+        "inspect", help="Inspect a processed dataset without exposing document content"
+    )
+    inspect.add_argument("dataset", help="Local version-1 processed dataset directory")
+    inspect.add_argument(
+        "--include-source-uri",
+        action="store_true",
+        help="Include source URIs after reviewing them for secrets",
+    )
+    inspect.add_argument(
+        "--max-report-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES", 5 * 1024 * 1024
+        ),
+    )
+    inspect.add_argument(
+        "--max-artifact-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_REVIEW_ARTIFACT_BYTES", 10 * 1024 * 1024
+        ),
+    )
+    inspect.add_argument(
+        "--max-documents",
+        type=_positive_int,
+        default=_environment_default("DOC_HARVESTER_MAX_REVIEW_DOCUMENTS", 10_000),
+    )
+    inspect.set_defaults(handler=_run_inspect)
+
     store = source_commands.add_parser(
         "store", help="Validate and store a processed dataset through a configured backend"
     )
@@ -504,6 +534,25 @@ def _run_store(args: argparse.Namespace) -> int:
         print(f"source storage failed: {error}", file=sys.stderr)
         return 1
     _emit_json(result.to_dict())
+    return 0
+
+
+def _run_inspect(args: argparse.Namespace) -> int:
+    from doc_harvester.dataset_review import inspect_dataset
+    from doc_harvester.dataset_storage import DatasetValidationError
+
+    try:
+        result = inspect_dataset(
+            args.dataset,
+            include_source_uri=args.include_source_uri,
+            max_report_bytes=args.max_report_bytes,
+            max_artifact_bytes=args.max_artifact_bytes,
+            max_documents=args.max_documents,
+        )
+    except (DatasetValidationError, OSError, ValueError) as error:
+        print(f"source inspection failed: {error}", file=sys.stderr)
+        return 1
+    _emit_json(result)
     return 0
 
 

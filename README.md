@@ -69,6 +69,9 @@ doc-harvester source process discovery.json --root . --output /tmp/strict-datase
 doc-harvester source store /tmp/dataset --storage local \
   --local-root /tmp/doc-harvester-storage --destination manual-test/run-001
 
+# List selectable documents and quality results without printing content or source URIs
+doc-harvester source inspect /tmp/dataset
+
 # Render one selected dataset document into Markdown for human review
 doc-harvester source render /tmp/dataset --document-index 0 \
   --output /tmp/review.md
@@ -166,6 +169,10 @@ Provider-neutral basic enrichment and quality adapters are available under
 `doc_harvester.enrichers` and `doc_harvester.quality`. `source process` writes a
 `quality.json` beside each processed document. Quality findings are review-only by default;
 `--fail-on-quality` changes the command exit status without deleting the review dataset.
+
+`source inspect` provides the read-only review checkpoint after processing. It lists indexes,
+formats, block/chunk counts, and safe quality codes without printing bodies, raw errors,
+absolute source directories, or source URIs by default.
 
 The provider-neutral `source store` command validates version-1 dataset structure before
 using a `StorageBackend`. It requires an explicit destination, rejects symbolic links, and

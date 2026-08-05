@@ -26,6 +26,8 @@
 - [STORE-001 manual test cases](phases/STORE-001-dataset-storage/manual-test-cases.md)
 - [PUB-002 — Reviewed dataset publication](phases/PUB-002-reviewed-dataset-publication/task-summary.md)
 - [PUB-002 manual test cases](phases/PUB-002-reviewed-dataset-publication/manual-test-cases.md)
+- [REVIEW-001 — Privacy-safe dataset inventory](phases/REVIEW-001-dataset-inventory/task-summary.md)
+- [REVIEW-001 manual test cases](phases/REVIEW-001-dataset-inventory/manual-test-cases.md)
 
 ## Operations and security
 

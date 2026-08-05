@@ -49,6 +49,8 @@ flag with the corresponding name takes precedence.
 | `DOC_HARVESTER_MAX_FETCH_BYTES` | `52428800` | `--max-bytes`; maximum fetched bytes |
 | `DOC_HARVESTER_HTTP_TIMEOUT` | `30` | `--timeout`; positive HTTP timeout in seconds |
 | `DOC_HARVESTER_MAX_MANIFEST_BYTES` | `5242880` | `--max-manifest-bytes`; processing-manifest bound |
+| `DOC_HARVESTER_MAX_REVIEW_ARTIFACT_BYTES` | `10485760` | `source inspect --max-artifact-bytes`; per document/chunk/quality JSON bound |
+| `DOC_HARVESTER_MAX_REVIEW_DOCUMENTS` | `10000` | `source inspect --max-documents`; maximum outcome inventory size |
 | `DOC_HARVESTER_MAX_PUBLICATION_DOCUMENT_BYTES` | `10485760` | `source render --max-document-bytes`; selected document JSON bound |
 | `DOC_HARVESTER_MAX_PUBLICATION_BYTES` | `10485760` | `source render --max-publication-bytes`; rendered Markdown bound |
 | `DOC_HARVESTER_MAX_PUBLICATION_BLOCKS` | `10000` | `source render --max-blocks`; normalized block bound |
@@ -138,6 +140,16 @@ Every processed resource also receives neutral metadata and a `quality.json`. Qu
 findings do not block publication or change the exit status unless `--fail-on-quality` is
 set. In enforced mode the review dataset is still retained, but the command returns non-zero
 when at least one processed document fails its quality thresholds.
+
+Inspect the resulting dataset before choosing a render index:
+
+```bash
+doc-harvester source inspect /tmp/doc-harvester-dataset
+```
+
+The JSON inventory omits source URIs, document/chunk text, raw failures, quality messages,
+and absolute source directories. `--include-source-uri` is available only for an intentional
+local investigation after checking URIs for secret query parameters.
 
 Store a reviewed dataset through a universal backend:
 
