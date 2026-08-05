@@ -44,6 +44,13 @@ def _positive_float(value: str) -> float:
     return parsed
 
 
+def _ratio_float(value: str) -> float:
+    parsed = float(value)
+    if not 0.0 <= parsed <= 1.0:
+        raise argparse.ArgumentTypeError("value must be between 0 and 1")
+    return parsed
+
+
 def _environment_default(name: str, fallback: int | float | str) -> str:
     return os.environ.get(name, str(fallback))
 
@@ -272,6 +279,59 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
         in {"1", "true", "yes", "on"},
         help="Include hidden and very-hidden XLSX worksheets (default: false)",
     )
+    process.add_argument(
+        "--quality-min-tokens",
+        type=_positive_int,
+        default=_environment_default("DOC_HARVESTER_QUALITY_MIN_TOKENS", 20),
+        help="Minimum tokens before a chunk is considered tiny (default: 20)",
+    )
+    for option, environment, fallback, help_text in (
+        (
+            "--quality-max-empty-ratio",
+            "DOC_HARVESTER_QUALITY_MAX_EMPTY_RATIO",
+            0.0,
+            "Maximum empty-chunk ratio (default: 0)",
+        ),
+        (
+            "--quality-max-tiny-ratio",
+            "DOC_HARVESTER_QUALITY_MAX_TINY_RATIO",
+            0.8,
+            "Maximum tiny-chunk ratio (default: 0.8)",
+        ),
+        (
+            "--quality-max-duplicate-ratio",
+            "DOC_HARVESTER_QUALITY_MAX_DUPLICATE_RATIO",
+            0.25,
+            "Maximum duplicate-chunk ratio (default: 0.25)",
+        ),
+        (
+            "--quality-max-noisy-ratio",
+            "DOC_HARVESTER_QUALITY_MAX_NOISY_RATIO",
+            0.1,
+            "Maximum noisy-chunk ratio (default: 0.1)",
+        ),
+        (
+            "--quality-max-oversized-ratio",
+            "DOC_HARVESTER_QUALITY_MAX_OVERSIZED_RATIO",
+            0.0,
+            "Maximum oversized-chunk ratio (default: 0)",
+        ),
+    ):
+        process.add_argument(
+            option,
+            type=_ratio_float,
+            default=_environment_default(environment, fallback),
+            help=help_text,
+        )
+    process.add_argument(
+        "--fail-on-quality",
+        action=argparse.BooleanOptionalAction,
+        default=os.environ.get("DOC_HARVESTER_FAIL_ON_QUALITY", "0")
+        .strip()
+        .lower()
+        in {"1", "true", "yes", "on"},
+        help="Return non-zero when processed documents fail quality checks (default: false)",
+    )
     process.set_defaults(handler=_run_process)
 
 
@@ -433,6 +493,13 @@ def _run_process(args: argparse.Namespace) -> int:
             max_xlsx_cells=args.max_xlsx_cells,
             max_xlsx_uncompressed_bytes=args.max_xlsx_uncompressed_bytes,
             include_hidden_xlsx_sheets=args.include_hidden_xlsx_sheets,
+            quality_min_tokens=args.quality_min_tokens,
+            quality_max_empty_ratio=args.quality_max_empty_ratio,
+            quality_max_tiny_ratio=args.quality_max_tiny_ratio,
+            quality_max_duplicate_ratio=args.quality_max_duplicate_ratio,
+            quality_max_noisy_ratio=args.quality_max_noisy_ratio,
+            quality_max_oversized_ratio=args.quality_max_oversized_ratio,
+            fail_on_quality=args.fail_on_quality,
         )
     except (ManifestValidationError, FetchError, OSError, ValueError) as error:
         print(f"source processing failed: {error}", file=sys.stderr)
@@ -446,8 +513,11 @@ def _run_process(args: argparse.Namespace) -> int:
             "processed_count",
             "skipped_count",
             "failed_count",
+            "quality_failed_count",
+            "quality_enforced",
         )
     }
     summary["output"] = str(Path(args.output))
     _emit_json(summary)
-    return 1 if report["failed_count"] or report["processed_count"] == 0 else 0
+    quality_failure = report["quality_enforced"] and report["quality_failed_count"]
+    return 1 if report["failed_count"] or report["processed_count"] == 0 or quality_failure else 0

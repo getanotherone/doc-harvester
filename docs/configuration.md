@@ -131,6 +131,11 @@ beside it and publishes the directory atomically. Original fetched bytes are not
 mixed dataset is still published for review, while any failed resource makes the command
 return non-zero.
 
+Every processed resource also receives neutral metadata and a `quality.json`. Quality
+findings do not block publication or change the exit status unless `--fail-on-quality` is
+set. In enforced mode the review dataset is still retained, but the command returns non-zero
+when at least one processed document fails its quality thresholds.
+
 ## Crawl controls
 
 | Variable | Default | Effect |
@@ -172,9 +177,21 @@ doc-harvester profile validate path/to/custom.json
 
 ## Quality controls
 
-`QUALITY_MIN_TOKENS`, `QUALITY_MAX_EMPTY_RATIO`, `QUALITY_MAX_TINY_RATIO`,
-`QUALITY_MAX_DUPLICATE_RATIO`, and `QUALITY_MAX_NOISY_RATIO` configure local quality gates.
-Defaults are defined in `src/quality_eval.py`.
+The manifest-driven `source process` command uses these universal settings:
+
+| Variable | Default | Effect |
+|---|---:|---|
+| `DOC_HARVESTER_QUALITY_MIN_TOKENS` | `20` | Chunks below this token count are tiny |
+| `DOC_HARVESTER_QUALITY_MAX_EMPTY_RATIO` | `0` | Maximum empty-chunk ratio |
+| `DOC_HARVESTER_QUALITY_MAX_TINY_RATIO` | `0.8` | Maximum tiny-chunk ratio |
+| `DOC_HARVESTER_QUALITY_MAX_DUPLICATE_RATIO` | `0.25` | Maximum duplicate-chunk ratio |
+| `DOC_HARVESTER_QUALITY_MAX_NOISY_RATIO` | `0.1` | Maximum noisy-chunk ratio |
+| `DOC_HARVESTER_QUALITY_MAX_OVERSIZED_RATIO` | `0` | Maximum oversized-chunk ratio |
+| `DOC_HARVESTER_FAIL_ON_QUALITY` | `0` | Return non-zero for quality findings |
+
+Ratio values must be between `0` and `1`. Matching CLI options override the environment.
+The unprefixed `QUALITY_*` settings in `.env.example` belong to the legacy electrical
+pipeline and do not configure `source process`.
 
 ## System dependencies
 

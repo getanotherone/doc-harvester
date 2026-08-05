@@ -65,6 +65,7 @@ def test_parser_exposes_credential_free_source_commands():
     assert fetch.source_command == "fetch"
     assert process.source_command == "process"
     assert process.include_hidden_xlsx_sheets is False
+    assert process.fail_on_quality is False
 
 
 def test_process_parser_can_include_hidden_xlsx_sheets():
@@ -101,6 +102,27 @@ def test_process_parser_hidden_xlsx_environment_default_can_be_overridden(monkey
 
     assert enabled.include_hidden_xlsx_sheets is True
     assert disabled.include_hidden_xlsx_sheets is False
+
+
+def test_process_parser_quality_environment_default_can_be_overridden(monkeypatch):
+    monkeypatch.setenv("DOC_HARVESTER_FAIL_ON_QUALITY", "1")
+
+    enabled = build_parser().parse_args(
+        ["source", "process", "manifest.json", "--output", "/tmp/dataset"]
+    )
+    disabled = build_parser().parse_args(
+        [
+            "source",
+            "process",
+            "manifest.json",
+            "--output",
+            "/tmp/dataset",
+            "--no-fail-on-quality",
+        ]
+    )
+
+    assert enabled.fail_on_quality is True
+    assert disabled.fail_on_quality is False
 
 
 def test_manual_discovery_emits_versioned_manifest(capsys):
