@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `E2E-001` |
-| Status | Complete locally; merge pending |
+| Status | Complete |
 | Depends on | `CRAWL-001`, `PIPE-001`, `PIPE-002`, `REVIEW-001`, `STORE-001`, `PUB-002` |
 | Scope | Prove the provider-neutral stages compose into one review-gated local workflow |
 
@@ -153,4 +153,8 @@ Local verification on 2026-08-06:
 - Wheel build and content inspection passed.
 - Diff validation passed and the complete 54-commit history scan found no leaks.
 
-Public PR and post-merge checks remain pending.
+Public and post-merge verification on 2026-08-06:
+
+- [PR #22](https://github.com/getanotherone/doc-harvester/pull/22) passed all seven checks
+  and was squash-merged as `b0e9a05`.
+- Local `main` fast-forwarded to the merge commit with a clean working tree.

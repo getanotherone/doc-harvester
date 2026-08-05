@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `STORE-001` |
-| Status | Complete; merge pending |
+| Status | Complete |
 | Depends on | `CORE-001`, `PIPE-001`, `PIPE-002` |
 | Scope | Safe provider-neutral handoff of reviewed version-1 datasets to `StorageBackend` |
 
@@ -155,4 +155,5 @@ Local verification on 2026-08-05:
 - PR #17 standalone Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed on
   implementation commit `7adabd5`.
 
-Post-merge evidence will be recorded after merge checks finish.
+PR #17 was squash-merged as `ee97435`; subsequent full regression and E2E release checks
+continue to cover dataset validation and local storage behavior.

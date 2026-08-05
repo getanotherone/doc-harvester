@@ -275,9 +275,12 @@ pipeline and do not configure `source process`.
 
 ## System dependencies
 
-- Tesseract and Russian language data are required for OCR.
-- Poppler is required by `pdf2image`.
-- Playwright browser binaries are required only for `--spa` crawling.
+- The universal CLI requires none of the system tools below.
+- Legacy OCR installs with `pip install 'doc-harvester[ocr]'`; Tesseract (and the desired
+  language data) plus Poppler are also required by that workflow.
+- Legacy SPA crawling installs with `pip install 'doc-harvester[browser]'` and requires a
+  Playwright browser binary.
+- `pip install 'doc-harvester[legacy]'` installs both optional Python dependency groups.
 
 Install Playwright's browser after package installation when SPA mode is needed:
 

@@ -242,13 +242,45 @@ def build_blocks_from_units(units: List[Dict]) -> List[Dict]:
     return blocks
 
 
-def _split_normal_block(block: Dict, max_tokens: int, overlap_sentences: int = 2) -> List[Dict]:
+def _split_long_text(text: str, max_tokens: int) -> List[str]:
+    """Split text on word boundaries, with a token-window fallback for long words."""
+    pieces: List[str] = []
+    current: List[str] = []
+    for word in text.split():
+        if count_tokens(word) > max_tokens:
+            if current:
+                pieces.append(" ".join(current))
+                current = []
+            token_ids = encoder.encode(word)
+            pieces.extend(
+                encoder.decode(token_ids[index : index + max_tokens])
+                for index in range(0, len(token_ids), max_tokens)
+            )
+            continue
+        candidate = " ".join([*current, word])
+        if current and count_tokens(candidate) > max_tokens:
+            pieces.append(" ".join(current))
+            current = [word]
+        else:
+            current.append(word)
+    if current:
+        pieces.append(" ".join(current))
+    return [piece for piece in pieces if piece]
+
+
+def _split_normal_block(
+    block: Dict, max_tokens: int, overlap_sentences: int = 2
+) -> List[Dict]:
     text = block["text"]
     if block["token_count"] <= max_tokens:
         return [block]
 
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-    sentences = [s.strip() for s in sentences if s.strip()]
+    sentences = [
+        piece
+        for sentence in re.split(r"(?<=[.!?])\s+", text)
+        if sentence.strip()
+        for piece in _split_long_text(sentence.strip(), max_tokens)
+    ]
     chunks = []
     current: List[str] = []
     current_tokens = 0
@@ -268,8 +300,10 @@ def _split_normal_block(block: Dict, max_tokens: int, overlap_sentences: int = 2
             )
             # Overlap: carry last N sentences into the next chunk
             overlap = current[-overlap_sentences:] if overlap_sentences else []
+            while overlap and count_tokens(" ".join([*overlap, sentence])) > max_tokens:
+                overlap.pop(0)
             current = overlap + [sentence]
-            current_tokens = sum(count_tokens(s) for s in current)
+            current_tokens = count_tokens(" ".join(current))
         else:
             current.append(sentence)
             current_tokens = projected_tokens if current_tokens else sentence_tokens
@@ -558,7 +592,7 @@ def chunk_blocks_v2(
         if raw_block.get("section"):
             sectioned_blocks += 1
 
-        if "normal" in block_types:
+        if raw_block["token_count"] > max_tokens and "table" not in block_types:
             processed_blocks = _split_normal_block(raw_block, max_tokens=max_tokens)
 
         for block in processed_blocks:

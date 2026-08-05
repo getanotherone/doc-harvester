@@ -3,7 +3,8 @@
 ## Development setup
 
 1. Create a Python 3.11 or 3.12 virtual environment.
-2. Run `python -m pip install -e '.[dev,api]'`.
+2. Run `python -m pip install -e '.[dev,api]'`. Add `legacy` only when changing the
+   legacy SPA/OCR workflow.
 3. Run `ruff check .` and `pytest -q` before submitting a change.
 4. Run the DocProc suite separately with
    `PYTHONPATH=services/doc_proc/backend/src pytest -q services/doc_proc/tests`.

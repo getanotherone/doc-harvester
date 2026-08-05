@@ -9,7 +9,7 @@
 | `E2E-001-TC-03` | Store the validated dataset locally | High | Passed by automation |
 | `E2E-001-TC-04` | Expose quality status and preview publication | Critical | Passed by automation |
 | `E2E-001-TC-05` | Preserve checkpoint on restart | Critical | Passed by automation |
-| `E2E-001-TC-06` | Complete public walkthrough and regression validation | Critical | Passed locally; PR pending |
+| `E2E-001-TC-06` | Complete public walkthrough and regression validation | Critical | Passed |
 
 Use [the golden-path walkthrough](../../golden-path.md) for the copyable manual workflow.
 Keep all outputs in a disposable local directory and never substitute production URLs or
@@ -139,4 +139,4 @@ documents when collecting public evidence.
 - **Test Data:** Repository synthetic fixtures only.
 - **Execution:** Passed locally on 2026-08-06: public walkthrough, Ruff, 87 focused tests,
   261 standalone tests, 107 DocProc tests, wheel build/content inspection, diff validation,
-  and 54-commit history scan. Public PR evidence remains pending.
+  and 54-commit history scan. PR #22 passed seven checks and merged as `b0e9a05`.

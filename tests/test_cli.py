@@ -1,4 +1,5 @@
 import json
+import sys
 
 from doc_harvester.cli import build_parser, main
 from doc_harvester.demo import build_demo_result
@@ -27,6 +28,16 @@ def test_cli_accepts_installed_publisher_name():
         ["publish", "README.md", "remote-page", "--publisher", "third-party-docs"]
     )
     assert args.publisher == "third-party-docs"
+
+
+def test_spa_crawl_reports_browser_extra_when_playwright_is_missing(
+    monkeypatch, capsys
+):
+    monkeypatch.setitem(sys.modules, "playwright", None)
+
+    assert main(["crawl", "https://example.com", "--spa", "--no-upload"]) == 1
+
+    assert "doc-harvester[browser]" in capsys.readouterr().err
 
 
 def test_offline_demo_contract():

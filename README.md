@@ -48,6 +48,18 @@ The demo uses embedded HTML, requires no credentials or network access, and writ
 To verify the complete review-gated workflow—from a synthetic local website through local
 storage and publication preview—follow the [credential-free golden path](docs/golden-path.md).
 
+The default installation contains the universal CLI and does not install browser or OCR
+runtime libraries. Add only the capability you need:
+
+```bash
+python -m pip install -e '.[browser]'  # legacy --spa crawling
+python -m pip install -e '.[ocr]'      # legacy PDF OCR helpers
+python -m pip install -e '.[legacy]'   # both optional legacy capabilities
+```
+
+Browser mode also requires a Playwright browser installation. OCR requires system
+Tesseract and Poppler binaries; see [configuration](docs/configuration.md).
+
 ## CLI
 
 ```bash
@@ -218,7 +230,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 
 ## Status
 
-Version `0.1.0` is an alpha release. APIs, configuration, and output schemas may change.
+Version `0.2.0` is the CLI-first open-source MVP. It remains an alpha-stage `0.x` release:
+APIs, configuration, and output schemas may change.
 
 ## License
 

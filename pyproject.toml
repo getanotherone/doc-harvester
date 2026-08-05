@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "doc-harvester"
-version = "0.1.0"
+version = "0.2.0"
 description = "A configurable ingestion pipeline for technical documents and RAG datasets"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,15 +22,24 @@ classifiers = [
 dependencies = [
   "beautifulsoup4==4.12.3",
   "openpyxl==3.1.5",
-  "pdf2image==1.17.0",
   "pdfminer.six==20231228",
-  "pytesseract==0.3.10",
-  "playwright==1.58.0",
   "requests==2.33.0",
   "tiktoken==0.7.0",
 ]
 
 [project.optional-dependencies]
+ocr = [
+  "pdf2image==1.17.0",
+  "pytesseract==0.3.10",
+]
+browser = [
+  "playwright==1.58.0",
+]
+legacy = [
+  "pdf2image==1.17.0",
+  "pytesseract==0.3.10",
+  "playwright==1.58.0",
+]
 api = [
   "fastapi==0.115.0",
   "uvicorn[standard]==0.30.6",

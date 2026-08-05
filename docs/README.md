@@ -32,6 +32,8 @@
 - [CRAWL-001 manual test cases](phases/CRAWL-001-safe-web-crawling/manual-test-cases.md)
 - [E2E-001 — Credential-free universal golden path](phases/E2E-001-universal-golden-path/task-summary.md)
 - [E2E-001 manual test cases](phases/E2E-001-universal-golden-path/manual-test-cases.md)
+- [REL-001 — MVP release readiness](phases/REL-001-mvp-release-readiness/task-summary.md)
+- [REL-001 manual test cases](phases/REL-001-mvp-release-readiness/manual-test-cases.md)
 
 ## Operations and security
 
@@ -42,6 +44,8 @@
 - [Architecture](architecture.md): current components, data flow, and boundaries.
 - [Credential-free golden path](golden-path.md): run the complete review-gated workflow
   against repository-owned local fixtures.
+- [CLI-first MVP scope](mvp-scope.md): supported outcomes, limitations, optional extras,
+  and `0.2.0` release criteria.
 - [Configuration](configuration.md): environment variables and safe defaults.
 - [Providers](providers.md): storage and publishing extension contracts.
 - [Wiki automation](wiki-automation.md): generating and publishing documentation.
