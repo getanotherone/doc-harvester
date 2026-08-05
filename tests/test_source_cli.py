@@ -42,6 +42,19 @@ class StaticFetcher:
         )
 
 
+class StaticCrawler:
+    name = "html"
+
+    def __init__(self, resources):
+        self.resources = resources
+        self.calls = []
+        self.last_report = {"schema_version": 1, "discovered_count": len(resources)}
+
+    def crawl(self, seeds, policy):
+        self.calls.append((seeds, policy))
+        return self.resources
+
+
 def test_parser_exposes_credential_free_source_commands():
     parser = build_parser()
 
@@ -49,6 +62,7 @@ def test_parser_exposes_credential_free_source_commands():
     sitemap = parser.parse_args(
         ["source", "discover", "sitemap", "https://example.com/sitemap.xml"]
     )
+    crawl = parser.parse_args(["source", "crawl", "https://example.com/docs"])
     fetch = parser.parse_args(
         ["source", "fetch", "README.md", "--output", "/tmp/readme.md"]
     )
@@ -83,6 +97,10 @@ def test_parser_exposes_credential_free_source_commands():
         "manual",
     )
     assert sitemap.discovery_mode == "sitemap"
+    assert crawl.source_command == "crawl"
+    assert crawl.limit == 100
+    assert crawl.max_depth == 3
+    assert crawl.respect_robots_txt is True
     assert fetch.source_command == "fetch"
     assert process.source_command == "process"
     assert process.include_hidden_xlsx_sheets is False
@@ -300,6 +318,131 @@ def test_sitemap_discovery_forwards_bounds_and_controls(monkeypatch, capsys):
     assert provider.requests[0].root_uri == "https://example.com/sitemap.xml"
     assert provider.requests[0].limit == 3
     assert json.loads(capsys.readouterr().out)["count"] == 1
+
+
+def test_source_crawl_forwards_policy_bounds_and_emits_manifest(monkeypatch, capsys):
+    crawler = StaticCrawler(
+        [ResourceRef("https://example.com/guide", source="html", metadata={"depth": 1})]
+    )
+    fetcher = object()
+    robots_fetcher = object()
+    calls = []
+
+    def fake_create_fetcher(name, **options):
+        calls.append(("fetcher", name, options))
+        return fetcher if len(calls) == 1 else robots_fetcher
+
+    def fake_create_crawler(name, **options):
+        calls.append(("crawler", name, options))
+        return crawler
+
+    monkeypatch.setattr(source_cli, "create_fetcher", fake_create_fetcher)
+    monkeypatch.setattr(source_cli, "create_crawler", fake_create_crawler)
+
+    assert main(
+        [
+            "source",
+            "crawl",
+            "https://example.com/",
+            "--limit",
+            "5",
+            "--max-depth",
+            "2",
+            "--delay",
+            "0.5",
+            "--ignore-robots",
+            "--allowed-domain",
+            "example.com",
+            "--include",
+            "*/docs/*",
+            "--exclude",
+            "*/private/*",
+            "--max-html-bytes",
+            "5000",
+            "--max-robots-bytes",
+            "500",
+            "--max-links-per-page",
+            "50",
+            "--timeout",
+            "2.5",
+        ]
+    ) == 0
+
+    assert calls[0] == (
+        "fetcher",
+        "http",
+        {"timeout_seconds": 2.5, "max_bytes": 5000},
+    )
+    assert calls[1] == (
+        "fetcher",
+        "http",
+        {"timeout_seconds": 2.5, "max_bytes": 500},
+    )
+    assert calls[2][0:2] == ("crawler", "html")
+    assert calls[2][2] == {
+        "fetcher": fetcher,
+        "robots_fetcher": robots_fetcher,
+        "max_html_bytes": 5000,
+        "max_robots_bytes": 500,
+        "max_links_per_page": 50,
+    }
+    seeds, policy = crawler.calls[0]
+    assert [seed.uri for seed in seeds] == ["https://example.com/"]
+    assert policy.max_pages == 5
+    assert policy.max_depth == 2
+    assert policy.delay_seconds == 0.5
+    assert policy.respect_robots_txt is False
+    assert policy.allowed_domains == ("example.com",)
+    assert policy.include_patterns == ("*/docs/*",)
+    assert policy.exclude_patterns == ("*/private/*",)
+    manifest = json.loads(capsys.readouterr().out)
+    assert manifest["provider"] == "html"
+    assert manifest["count"] == 1
+    assert manifest["crawl"]["discovered_count"] == 1
+
+
+def test_source_crawl_preserves_existing_manifest_by_default(monkeypatch, tmp_path, capsys):
+    crawler = StaticCrawler([])
+    monkeypatch.setattr(source_cli, "create_fetcher", lambda *args, **kwargs: object())
+    monkeypatch.setattr(source_cli, "create_crawler", lambda *args, **kwargs: crawler)
+    output = tmp_path / "crawl.json"
+    output.write_text("keep", encoding="utf-8")
+
+    assert main(
+        ["source", "crawl", "https://example.com/", "--output", str(output)]
+    ) == 1
+    assert output.read_text(encoding="utf-8") == "keep"
+    assert "already exists" in capsys.readouterr().err
+    assert crawler.calls == []
+
+
+def test_source_crawl_rejects_output_symlink_before_network(monkeypatch, tmp_path, capsys):
+    called = False
+
+    def fail_if_called(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("network factory must not be called")
+
+    monkeypatch.setattr(source_cli, "create_fetcher", fail_if_called)
+    target = tmp_path / "target.json"
+    target.write_text("keep", encoding="utf-8")
+    output = tmp_path / "crawl.json"
+    output.symlink_to(target)
+
+    assert main(
+        [
+            "source",
+            "crawl",
+            "https://example.com/",
+            "--output",
+            str(output),
+            "--overwrite",
+        ]
+    ) == 1
+    assert called is False
+    assert target.read_text(encoding="utf-8") == "keep"
+    assert "symbolic link" in capsys.readouterr().err
 
 
 def test_local_fetch_auto_selection_writes_bytes_and_receipt(tmp_path, capsys):

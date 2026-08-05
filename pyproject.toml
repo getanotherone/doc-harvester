@@ -60,6 +60,7 @@ packages = [
   "doc_harvester",
   "doc_harvester.core",
   "doc_harvester.chunkers",
+  "doc_harvester.crawlers",
   "doc_harvester.discovery",
   "doc_harvester.enrichers",
   "doc_harvester.extractors",

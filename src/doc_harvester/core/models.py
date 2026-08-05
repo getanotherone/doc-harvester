@@ -51,12 +51,15 @@ class CrawlPolicy:
     allowed_domains: tuple[str, ...] = ()
     include_patterns: tuple[str, ...] = ()
     exclude_patterns: tuple[str, ...] = ()
+    max_depth: int = 3
 
     def __post_init__(self) -> None:
         if self.max_pages < 1:
             raise ValueError("crawl max_pages must be at least 1")
         if self.delay_seconds < 0:
             raise ValueError("crawl delay_seconds cannot be negative")
+        if self.max_depth < 0:
+            raise ValueError("crawl max_depth cannot be negative")
 
 
 @dataclass(frozen=True)

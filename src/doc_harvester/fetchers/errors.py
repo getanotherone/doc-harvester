@@ -9,5 +9,9 @@ class FetchTooLargeError(FetchError):
     """Raised when a resource exceeds the configured byte limit."""
 
 
+class RedirectBlockedError(FetchError):
+    """Raised before following a redirect rejected by caller policy."""
+
+
 class UnsupportedSchemeError(FetchError):
     """Raised when a fetcher receives a resource it does not support."""

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import urlsplit
+
 import pytest
 
 from doc_harvester.core import ResourceRef
@@ -8,6 +10,7 @@ from doc_harvester.fetchers import (
     FetchTooLargeError,
     HTTPFetcher,
     LocalFileFetcher,
+    RedirectBlockedError,
     UnsupportedSchemeError,
     available_fetchers,
     create_fetcher,
@@ -15,10 +18,11 @@ from doc_harvester.fetchers import (
 
 
 class FakeResponse:
-    def __init__(self, *, chunks=(), status_code=200, headers=None):
+    def __init__(self, *, chunks=(), status_code=200, headers=None, url=""):
         self.chunks = tuple(chunks)
         self.status_code = status_code
         self.headers = dict(headers or {})
+        self.url = url
         self.closed = False
 
     def iter_content(self, *, chunk_size):
@@ -39,6 +43,16 @@ class FakeSession:
         if isinstance(self.result, Exception):
             raise self.result
         return self.result
+
+
+class SequenceSession:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    def get(self, uri, **options):
+        self.calls.append((uri, options))
+        return self.responses.pop(0)
 
 
 def test_http_fetcher_streams_content_and_preserves_resource_metadata():
@@ -102,6 +116,53 @@ def test_http_fetcher_sanitizes_network_failure_messages():
     message = str(caught.value)
     assert message == "HTTP fetch failed for https://example.com/file: RuntimeError"
     assert "secret" not in message
+
+
+def test_http_fetcher_records_redirect_target_for_crawler_policy():
+    session = SequenceSession(
+        [
+            FakeResponse(status_code=302, headers={"Location": "/final"}),
+            FakeResponse(
+                chunks=(b"page",),
+                headers={"content-type": "text/html"},
+                url="https://example.com/final",
+            ),
+        ]
+    )
+
+    artifact = HTTPFetcher(session=session).fetch(
+        ResourceRef("https://example.com/start")
+    )
+
+    assert artifact.filename == "final"
+    assert artifact.metadata["final_uri"] == "https://example.com/final"
+    assert [uri for uri, _ in session.calls] == [
+        "https://example.com/start",
+        "https://example.com/final",
+    ]
+    assert all(options["allow_redirects"] is False for _, options in session.calls)
+
+
+def test_http_fetcher_blocks_redirect_before_contacting_rejected_origin():
+    session = SequenceSession(
+        [
+            FakeResponse(
+                status_code=302,
+                headers={"Location": "https://outside.test/private?token=secret"},
+            )
+        ]
+    )
+    fetcher = HTTPFetcher(
+        session=session,
+        redirect_validator=lambda uri: urlsplit(uri).hostname == "example.com",
+    )
+
+    with pytest.raises(RedirectBlockedError) as caught:
+        fetcher.fetch(ResourceRef("https://example.com/start"))
+
+    assert [uri for uri, _ in session.calls] == ["https://example.com/start"]
+    assert "outside" not in str(caught.value)
+    assert "secret" not in str(caught.value)
 
 
 def test_local_fetcher_reads_relative_paths_and_file_uris(tmp_path):

@@ -78,6 +78,12 @@ CLI group. They do not replace the flat scraper's legacy crawl or search orchest
 Sitemap discovery follows sitemap declarations and indexes; it is not an HTML crawler and
 does not apply robots allow/disallow rules to later page requests.
 
+The separate universal `HTMLCrawler` performs bounded breadth-first anchor traversal and
+produces the same version-1 manifest. It enforces robots, per-origin delay, exact seed-origin
+scope, pre-request redirect policy, deduplication, output/traversal filters, and independent
+page/depth/byte/link bounds. It discovers recognized linked documents without downloading
+them; `source process` remains responsible for fetching and extracting manifest resources.
+
 `source process` is the first manifest-driven universal processing path. It stages a new
 local dataset containing normalized blocks, chunks, and a per-resource report, then
 publishes that directory atomically. It does not save originals. It supports embedded-text

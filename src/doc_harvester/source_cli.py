@@ -11,6 +11,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from doc_harvester.core import DiscoveryRequest, ResourceRef
+from doc_harvester.crawlers import create_crawler
 from doc_harvester.discovery import create_discovery_provider
 from doc_harvester.fetchers import FetchError, create_fetcher
 
@@ -28,6 +29,12 @@ DEFAULT_MAX_XLSX_SHEETS = 100
 DEFAULT_MAX_XLSX_ROWS = 200_000
 DEFAULT_MAX_XLSX_CELLS = 2_000_000
 DEFAULT_MAX_XLSX_UNCOMPRESSED_BYTES = 250 * 1024 * 1024
+DEFAULT_CRAWL_MAX_PAGES = 100
+DEFAULT_CRAWL_MAX_DEPTH = 3
+DEFAULT_CRAWL_DELAY_SECONDS = 1.0
+DEFAULT_CRAWL_MAX_HTML_BYTES = 5 * 1024 * 1024
+DEFAULT_CRAWL_MAX_ROBOTS_BYTES = 512 * 1024
+DEFAULT_CRAWL_MAX_LINKS_PER_PAGE = 1000
 
 
 def _positive_int(value: str) -> int:
@@ -48,6 +55,13 @@ def _positive_float(value: str) -> float:
     parsed = float(value)
     if parsed <= 0:
         raise argparse.ArgumentTypeError("value must be positive")
+    return parsed
+
+
+def _non_negative_float(value: str) -> float:
+    parsed = float(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("value cannot be negative")
     return parsed
 
 
@@ -75,7 +89,7 @@ def _add_manifest_options(parser: argparse.ArgumentParser) -> None:
 def add_source_commands(commands: argparse._SubParsersAction) -> None:
     """Attach the additive source command group to the public parser."""
     source = commands.add_parser(
-        "source", help="Discover or fetch sources without provider credentials"
+        "source", help="Discover, crawl, fetch, and process sources with universal adapters"
     )
     source_commands = source.add_subparsers(dest="source_command", required=True)
 
@@ -135,6 +149,91 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
         include_robots=True,
         same_origin_only=True,
     )
+
+    crawl = source_commands.add_parser(
+        "crawl", help="Crawl same-origin HTML pages into a universal resource manifest"
+    )
+    crawl.add_argument("seed", nargs="+", help="Absolute HTTP(S) seed URL")
+    crawl.add_argument(
+        "--limit",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_CRAWL_MAX_PAGES", DEFAULT_CRAWL_MAX_PAGES
+        ),
+        help="Maximum fetched HTML pages and manifest resources (default: 100)",
+    )
+    crawl.add_argument(
+        "--max-depth",
+        type=_non_negative_int,
+        default=_environment_default(
+            "DOC_HARVESTER_CRAWL_MAX_DEPTH", DEFAULT_CRAWL_MAX_DEPTH
+        ),
+        help="Maximum link depth from a seed (default: 3)",
+    )
+    crawl.add_argument(
+        "--delay",
+        type=_non_negative_float,
+        default=_environment_default(
+            "DOC_HARVESTER_CRAWL_DELAY_SECONDS", DEFAULT_CRAWL_DELAY_SECONDS
+        ),
+        help="Minimum delay between crawl fetches to one origin (default: 1)",
+    )
+    crawl.add_argument(
+        "--ignore-robots",
+        dest="respect_robots_txt",
+        action="store_false",
+        help="Disable robots.txt enforcement only with site-owner authorization",
+    )
+    crawl.add_argument(
+        "--allowed-domain",
+        action="append",
+        default=[],
+        help="Explicit hostname allowlist; repeat for additional hosts",
+    )
+    crawl.add_argument(
+        "--include",
+        action="append",
+        default=[],
+        help="URL glob included in the manifest; traversal may pass through other pages",
+    )
+    crawl.add_argument(
+        "--exclude",
+        action="append",
+        default=[],
+        help="URL glob excluded from traversal and the manifest",
+    )
+    crawl.add_argument(
+        "--max-html-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_CRAWL_MAX_HTML_BYTES", DEFAULT_CRAWL_MAX_HTML_BYTES
+        ),
+    )
+    crawl.add_argument(
+        "--max-robots-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_CRAWL_MAX_ROBOTS_BYTES", DEFAULT_CRAWL_MAX_ROBOTS_BYTES
+        ),
+    )
+    crawl.add_argument(
+        "--max-links-per-page",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_CRAWL_MAX_LINKS_PER_PAGE",
+            DEFAULT_CRAWL_MAX_LINKS_PER_PAGE,
+        ),
+    )
+    crawl.add_argument(
+        "--timeout",
+        type=_positive_float,
+        default=_environment_default(
+            "DOC_HARVESTER_HTTP_TIMEOUT", DEFAULT_HTTP_TIMEOUT_SECONDS
+        ),
+    )
+    crawl.add_argument("--output", help="Write the version-1 manifest to this file")
+    crawl.add_argument("--overwrite", action="store_true")
+    crawl.set_defaults(handler=_run_source_crawl, respect_robots_txt=True)
 
     fetch = source_commands.add_parser(
         "fetch", help="Fetch one bounded HTTP or local resource into an explicit file"
@@ -598,6 +697,71 @@ def _run_sitemap_discovery(args: argparse.Namespace) -> int:
         _emit_json(_manifest(provider.name, resources), args.output)
     except (FetchError, OSError, ValueError) as error:
         print(f"source discovery failed: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def _run_source_crawl(args: argparse.Namespace) -> int:
+    from doc_harvester.core import CrawlPolicy
+
+    destination = Path(args.output) if args.output else None
+    if destination is not None:
+        if destination.is_symlink():
+            print(
+                f"source crawl failed: output is a symbolic link: {destination}",
+                file=sys.stderr,
+            )
+            return 1
+        if destination.exists() and not args.overwrite:
+            print(
+                f"source crawl failed: output already exists: {destination}",
+                file=sys.stderr,
+            )
+            return 1
+        if destination.exists() and not destination.is_file():
+            print(
+                f"source crawl failed: output is not a file: {destination}",
+                file=sys.stderr,
+            )
+            return 1
+    try:
+        fetcher = create_fetcher(
+            "http", timeout_seconds=args.timeout, max_bytes=args.max_html_bytes
+        )
+        robots_fetcher = create_fetcher(
+            "http", timeout_seconds=args.timeout, max_bytes=args.max_robots_bytes
+        )
+        crawler = create_crawler(
+            "html",
+            fetcher=fetcher,
+            robots_fetcher=robots_fetcher,
+            max_html_bytes=args.max_html_bytes,
+            max_robots_bytes=args.max_robots_bytes,
+            max_links_per_page=args.max_links_per_page,
+        )
+        resources = list(
+            crawler.crawl(
+                [ResourceRef(uri, source="manual") for uri in args.seed],
+                CrawlPolicy(
+                    max_pages=args.limit,
+                    max_depth=args.max_depth,
+                    delay_seconds=args.delay,
+                    respect_robots_txt=args.respect_robots_txt,
+                    allowed_domains=tuple(args.allowed_domain),
+                    include_patterns=tuple(args.include),
+                    exclude_patterns=tuple(args.exclude),
+                ),
+            )
+        )
+        payload = _manifest(crawler.name, resources)
+        payload["crawl"] = dict(getattr(crawler, "last_report", {}))
+        if destination is not None:
+            rendered = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8") + b"\n"
+            _atomic_write(destination, rendered, overwrite=args.overwrite)
+        else:
+            _emit_json(payload)
+    except (FetchError, OSError, ValueError) as error:
+        print(f"source crawl failed: {error}", file=sys.stderr)
         return 1
     return 0
 

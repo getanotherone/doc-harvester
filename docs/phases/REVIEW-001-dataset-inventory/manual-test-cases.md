@@ -10,7 +10,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `REVIEW-001-TC-02` | Verify privacy defaults and URI opt-in | Critical | Passed by automation |
 | `REVIEW-001-TC-03` | Reject invalid and oversized datasets | Critical | Passed by automation |
 | `REVIEW-001-TC-04` | Select, render, and preview one document | High | Passed |
-| `REVIEW-001-TC-05` | Complete regression and release validation | Critical | Passed locally; PR pending |
+| `REVIEW-001-TC-05` | Complete regression and release validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -166,11 +166,11 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed locally; PR and post-merge pending
+- **Status:** Passed
 - **Executed:** 2026-08-05
 - **Tester:** Automation
-- **Actual Result:** Ruff, 43 focused tests, 240 standalone tests, 107 DocProc tests, wheel build/contents, and extracted-wheel inspect smoke passed.
-- **Evidence:** Local verification output; public CI link pending
+- **Actual Result:** Ruff, 43 focused tests, 240 standalone tests, 107 DocProc tests, wheel build/contents, seven PR checks, post-merge inspection, and 52-commit history scan passed.
+- **Evidence:** Local verification output; [PR #20](https://github.com/getanotherone/doc-harvester/pull/20); merge `334f3fa`
 
 ## Automated coverage references
 
