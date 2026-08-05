@@ -55,6 +55,7 @@ def test_parser_exposes_credential_free_source_commands():
     process = parser.parse_args(
         ["source", "process", "manifest.json", "--output", "/tmp/dataset"]
     )
+    inspect = parser.parse_args(["source", "inspect", "/tmp/dataset"])
     store = parser.parse_args(
         [
             "source",
@@ -86,6 +87,10 @@ def test_parser_exposes_credential_free_source_commands():
     assert process.source_command == "process"
     assert process.include_hidden_xlsx_sheets is False
     assert process.fail_on_quality is False
+    assert inspect.source_command == "inspect"
+    assert inspect.include_source_uri is False
+    assert inspect.max_artifact_bytes == 10 * 1024 * 1024
+    assert inspect.max_documents == 10_000
     assert store.source_command == "store"
     assert store.storage == "local"
     assert store.overwrite is False

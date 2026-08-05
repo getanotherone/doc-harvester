@@ -142,6 +142,7 @@ To prepare one stored/reviewed dataset document for a publisher, render it to an
 local Markdown file first:
 
 ```bash
+doc-harvester source inspect /tmp/dataset
 doc-harvester source render /tmp/dataset --document-index 0 \
   --output /tmp/review.md
 doc-harvester publish /tmp/review.md guides/review --publisher local

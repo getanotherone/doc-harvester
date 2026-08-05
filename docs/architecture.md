@@ -93,6 +93,11 @@ classification. The gate records empty, tiny, duplicate, noisy, and oversized ra
 per-document `quality.json`. Findings remain visible in a successfully published dataset;
 operators may opt into a non-zero exit status with `--fail-on-quality`.
 
+`source inspect` reads the validated dataset as a separate, read-only review boundary. It
+revalidates bounded document/chunk/quality structures and emits only operational inventory
+fields. Content, raw failures, absolute source directories, and source URIs are excluded by
+default. The resulting index is the explicit input to `source render`.
+
 `source store` is the reviewed handoff from the atomic local dataset to a configured
 `StorageBackend`. It validates the processing report and every processed resource's document,
 chunk, and quality artifacts before writing. The default no-overwrite policy preflights all

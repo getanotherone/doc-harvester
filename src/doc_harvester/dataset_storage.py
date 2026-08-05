@@ -62,9 +62,24 @@ def validate_dataset(
     report = _load_report(report_path, max_bytes=max_report_bytes)
 
     processed = 0
+    indexes: set[int] = set()
     for index, outcome in enumerate(report["outcomes"]):
         if not isinstance(outcome, dict):
             raise DatasetValidationError(f"processing outcome {index} must be an object")
+        document_index = outcome.get("index")
+        if (
+            not isinstance(document_index, int)
+            or isinstance(document_index, bool)
+            or document_index < 0
+        ):
+            raise DatasetValidationError(
+                f"processing outcome {index} requires a non-negative integer index"
+            )
+        if document_index in indexes:
+            raise DatasetValidationError(
+                f"processing outcome index is duplicated: {document_index}"
+            )
+        indexes.add(document_index)
         if outcome.get("status") != "processed":
             continue
         processed += 1

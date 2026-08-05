@@ -95,6 +95,24 @@ def test_validate_dataset_rejects_symbolic_links(tmp_path):
         validate_dataset(dataset)
 
 
+def test_validate_dataset_rejects_duplicate_or_invalid_outcome_indexes(tmp_path):
+    dataset = tmp_path / "dataset"
+    dataset.mkdir()
+    report = make_dataset(dataset)
+    report["outcomes"].append(
+        {"index": 0, "status": "skipped", "reason": "unsupported_format"}
+    )
+    (dataset / "processing-report.json").write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(DatasetValidationError, match="duplicated"):
+        validate_dataset(dataset)
+
+    report["outcomes"][-1]["index"] = -1
+    (dataset / "processing-report.json").write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(DatasetValidationError, match="non-negative integer"):
+        validate_dataset(dataset)
+
+
 def test_source_store_cli_uses_explicit_local_destination(tmp_path, capsys):
     dataset = tmp_path / "dataset"
     dataset.mkdir()

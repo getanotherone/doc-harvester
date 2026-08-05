@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `PUB-002` |
-| Status | Complete; merge pending |
+| Status | Complete |
 | Depends on | `PIPE-001`, `PIPE-002`, `STORE-001`, `PUB-001` |
 | Scope | Safe handoff from one reviewed processed document to the universal `Publisher` contract |
 
@@ -154,4 +154,10 @@ Local verification on 2026-08-05:
 - Complete 48-commit history scan found no leaks. The full working directory reported only
   the intentionally ignored local `.env`; it is excluded from the candidate public tree.
 
-Pull-request and post-merge verification remain pending.
+Public and post-merge verification on 2026-08-05:
+
+- [PR #19](https://github.com/getanotherone/doc-harvester/pull/19) passed all seven checks
+  with no conflicts and was squash-merged as `d700bf0`.
+- Post-merge Ruff, 235 standalone tests, and 107 DocProc tests passed on `main`.
+- Post-merge inspect-independent render/preview/local-publish smoke remained byte-identical.
+- Complete merged history scan covered 50 commits and found no leaks.

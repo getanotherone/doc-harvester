@@ -11,7 +11,7 @@ Related task summary: [task-summary.md](task-summary.md)
 | `PUB-002-TC-03` | Reject unsafe or bounded inputs | Critical | Passed by automation |
 | `PUB-002-TC-04` | Preview, create, and explicitly update locally | Critical | Passed by automation |
 | `PUB-002-TC-05` | Preserve destination on local write failure | High | Passed by automation |
-| `PUB-002-TC-06` | Complete regression and release validation | Critical | Passed locally; PR pending |
+| `PUB-002-TC-06` | Complete regression and release validation | Critical | Passed |
 
 ## Safety and test-data rules
 
@@ -199,11 +199,11 @@ Related task summary: [task-summary.md](task-summary.md)
 
 ### Execution record
 
-- **Status:** Passed locally; PR and post-merge pending
+- **Status:** Passed
 - **Executed:** 2026-08-05
 - **Tester:** Automation
-- **Actual Result:** Ruff, 235 standalone tests, 107 DocProc tests, wheel build/contents/extracted-wheel smoke, diff validation, and 48-commit history scan passed. Working-directory scan found only the ignored local `.env`, which is not part of the public candidate tree.
-- **Evidence:** Local verification output; public CI link pending
+- **Actual Result:** Ruff, 235 standalone tests, 107 DocProc tests, wheel build/contents/extracted-wheel smoke, diff validation, seven PR checks, post-merge smoke, and 50-commit history scan passed. Working-directory scan found only the ignored local `.env`, which was not part of the public candidate tree.
+- **Evidence:** Local verification output; [PR #19](https://github.com/getanotherone/doc-harvester/pull/19); merge `d700bf0`
 
 ## Automated coverage references
 
