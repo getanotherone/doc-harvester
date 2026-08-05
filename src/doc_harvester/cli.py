@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse
@@ -151,11 +152,21 @@ def _run_publish(args: argparse.Namespace) -> int:
 
     overrides = {"root": args.local_root} if args.local_root else {}
     publisher = create_publisher(args.publisher, **overrides)
-    result = publisher.publish(
-        PublishRequest(Path(args.source), args.destination, args.title),
-        dry_run=not args.apply,
-        create_missing=args.create_missing,
-    )
+    request = PublishRequest(Path(args.source), args.destination, args.title)
+    result = publisher.publish(request, dry_run=True, create_missing=args.create_missing)
+    if args.apply:
+        if result.status == "would_update" and not args.update_existing:
+            print(
+                "publication failed: destination exists; use --update-existing intentionally",
+                file=sys.stderr,
+            )
+            return 1
+        if result.status != "missing" or args.create_missing:
+            result = publisher.publish(
+                request,
+                dry_run=False,
+                create_missing=args.create_missing,
+            )
     print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
     return 0 if result.status not in {"failed", "missing"} else 1
 
@@ -238,6 +249,11 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--title", default="")
     publish.add_argument("--local-root", help="Override local publisher root")
     publish.add_argument("--apply", action="store_true", help="Apply instead of dry-run")
+    publish.add_argument(
+        "--update-existing",
+        action="store_true",
+        help="Allow --apply to replace or update an existing destination",
+    )
     publish.add_argument("--create-missing", action="store_true")
     publish.set_defaults(handler=_run_publish)
 

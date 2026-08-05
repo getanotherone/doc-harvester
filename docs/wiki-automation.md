@@ -62,7 +62,8 @@ skip unchanged pages. Snapshots are not backups of remote revision history.
 doc-harvester publish wiki/out/page.md docs/page --publisher yandex-wiki
 
 # Confluence page title lookup/update
-doc-harvester publish wiki/out/page.md 'title:Roadmap' --publisher confluence --apply
+doc-harvester publish wiki/out/page.md 'title:Roadmap' --publisher confluence \
+  --apply --update-existing
 
 # Confluence child creation
 doc-harvester publish wiki/out/page.md 'parent:123456/Roadmap' \
@@ -70,7 +71,7 @@ doc-harvester publish wiki/out/page.md 'parent:123456/Roadmap' \
 
 # Notion existing page replacement
 doc-harvester publish wiki/out/page.md 'page:01234567-89ab-cdef-0123-456789abcdef' \
-  --publisher notion --apply
+  --publisher notion --apply --update-existing
 
 # Notion child creation
 doc-harvester publish wiki/out/page.md 'parent:01234567-89ab-cdef-0123-456789abcdef' \

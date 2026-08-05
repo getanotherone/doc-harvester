@@ -99,6 +99,12 @@ chunk, and quality artifacts before writing. The default no-overwrite policy pre
 target objects, and symbolic links are rejected. Generic remote backends cannot guarantee an
 atomic multi-object commit, so failed remote uploads must be reviewed and cleaned by prefix.
 
+`source render` is the separate publication handoff. It validates the same dataset, selects
+one processed outcome by index, and atomically creates bounded Markdown outside the dataset.
+Source URIs are private by default. An operator reviews this artifact before passing it to a
+`Publisher`; CLI publication previews first, and replacing an existing destination requires
+both apply and update authorization. No processing command automatically publishes content.
+
 ## Reliability controls
 
 - Streaming downloads avoid loading large responses into memory.
