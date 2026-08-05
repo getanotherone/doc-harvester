@@ -20,6 +20,7 @@ class S3Storage(StorageProvider):
         region: str | None = None,
         access_key: str | None = None,
         secret_key: str | None = None,
+        session_token: str | None = None,
         client: Any | None = None,
     ) -> None:
         if not bucket:
@@ -37,6 +38,7 @@ class S3Storage(StorageProvider):
                 region_name=region,
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
+                aws_session_token=session_token,
             )
         self.client = client
 

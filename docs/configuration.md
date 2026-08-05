@@ -136,6 +136,38 @@ findings do not block publication or change the exit status unless `--fail-on-qu
 set. In enforced mode the review dataset is still retained, but the command returns non-zero
 when at least one processed document fails its quality thresholds.
 
+Store a reviewed dataset through a universal backend:
+
+```bash
+doc-harvester source store /tmp/doc-harvester-dataset \
+  --storage local --local-root /tmp/doc-harvester-storage \
+  --destination manual-test/run-001
+```
+
+`source store` requires a version-1 `processing-report.json`, verifies the referenced
+document/chunk/quality files, rejects symbolic links and unsafe paths, and protects existing
+objects by default. `--overwrite` is required to replace them. The processing report is
+bounded by `DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES` (default 5 MiB).
+
+## Storage controls
+
+| Variable | Default | Effect |
+|---|---:|---|
+| `DOC_HARVESTER_STORAGE` | `local` | Selected built-in backend |
+| `DOC_HARVESTER_LOCAL_STORAGE_ROOT` | `storage` | Local backend root |
+| `DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES` | `5242880` | Dataset validation bound |
+| `DOC_HARVESTER_S3_BUCKET` | empty | S3/S3-compatible bucket |
+| `DOC_HARVESTER_S3_PREFIX` | empty | Optional key prefix |
+| `DOC_HARVESTER_S3_ENDPOINT_URL` | empty | Custom endpoint; omit for AWS S3 |
+| `DOC_HARVESTER_S3_REGION` | empty | AWS region or provider-specific value |
+| `AWS_ACCESS_KEY_ID` | empty | Standard SDK credential; secret-adjacent |
+| `AWS_SECRET_ACCESS_KEY` | empty | Standard SDK secret credential |
+| `AWS_SESSION_TOKEN` | empty | Optional temporary credential token |
+
+Non-secret S3 fields can also be supplied through `source store --s3-*` options. Credentials
+remain environment-only. Legacy `S3_BUCKET`, `S3_PREFIX`, `S3_ENDPOINT_URL`, and `S3_REGION`
+are accepted for compatibility but the prefixed names above are canonical.
+
 ## Crawl controls
 
 | Variable | Default | Effect |

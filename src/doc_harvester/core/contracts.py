@@ -137,16 +137,31 @@ class StorageBackend(ABC):
         overwrite: bool = True,
     ) -> StorageResult:
         source_path = Path(source)
+        if source_path.is_symlink():
+            raise ValueError(f"source directory is a symbolic link: {source_path}")
         if not source_path.is_dir():
             raise FileNotFoundError(f"source directory not found: {source_path}")
-        count = 0
-        total_bytes = 0
+        files: list[tuple[Path, str]] = []
         for path in sorted(source_path.rglob("*")):
             relative_parts = path.relative_to(source_path).parts
+            if path.is_symlink():
+                raise ValueError(f"source tree contains a symbolic link: {path.name}")
             if not path.is_file() or any(part.startswith(".") for part in relative_parts):
                 continue
             relative = path.relative_to(source_path).as_posix()
             target = "/".join(part for part in (destination.strip("/"), relative) if part)
+            files.append((path, target))
+
+        if not overwrite:
+            conflicts = [target for _, target in files if self.exists(target)]
+            if conflicts:
+                raise FileExistsError(
+                    f"storage destination already contains: {conflicts[0]}"
+                )
+
+        count = 0
+        total_bytes = 0
+        for path, target in files:
             self.put_file(path, target, overwrite=overwrite)
             count += 1
             total_bytes += path.stat().st_size

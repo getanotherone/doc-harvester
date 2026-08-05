@@ -18,14 +18,32 @@ def create_storage(name: str | None = None, **overrides) -> StorageProvider:
     if provider == "yandex":
         return YandexDiskStorage(overrides.get("token"))
     if provider == "s3":
-        bucket = overrides.get("bucket") or os.environ.get("S3_BUCKET", "")
+        bucket = (
+            overrides.get("bucket")
+            or os.environ.get("DOC_HARVESTER_S3_BUCKET")
+            or os.environ.get("S3_BUCKET", "")
+        )
         return S3Storage(
             bucket,
-            prefix=overrides.get("prefix") or os.environ.get("S3_PREFIX", ""),
-            endpoint_url=overrides.get("endpoint_url") or os.environ.get("S3_ENDPOINT_URL"),
-            region=overrides.get("region") or os.environ.get("S3_REGION"),
+            prefix=(
+                overrides.get("prefix")
+                or os.environ.get("DOC_HARVESTER_S3_PREFIX")
+                or os.environ.get("S3_PREFIX", "")
+            ),
+            endpoint_url=(
+                overrides.get("endpoint_url")
+                or os.environ.get("DOC_HARVESTER_S3_ENDPOINT_URL")
+                or os.environ.get("S3_ENDPOINT_URL")
+            ),
+            region=(
+                overrides.get("region")
+                or os.environ.get("DOC_HARVESTER_S3_REGION")
+                or os.environ.get("S3_REGION")
+            ),
             access_key=overrides.get("access_key") or os.environ.get("AWS_ACCESS_KEY_ID"),
             secret_key=overrides.get("secret_key") or os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            session_token=overrides.get("session_token")
+            or os.environ.get("AWS_SESSION_TOKEN"),
             client=overrides.get("client"),
         )
     raise ValueError(f"unknown storage provider: {provider}")

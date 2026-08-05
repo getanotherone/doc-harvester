@@ -65,6 +65,10 @@ doc-harvester source process discovery.json --root . --output /tmp/dataset
 doc-harvester source process discovery.json --root . --output /tmp/strict-dataset \
   --fail-on-quality
 
+# Validate and store a reviewed dataset locally without overwriting existing files
+doc-harvester source store /tmp/dataset --storage local \
+  --local-root /tmp/doc-harvester-storage --destination manual-test/run-001
+
 # Crawl locally without uploading
 doc-harvester crawl https://example.com/catalog/ --no-upload
 
@@ -156,6 +160,11 @@ Provider-neutral basic enrichment and quality adapters are available under
 `doc_harvester.enrichers` and `doc_harvester.quality`. `source process` writes a
 `quality.json` beside each processed document. Quality findings are review-only by default;
 `--fail-on-quality` changes the command exit status without deleting the review dataset.
+
+The provider-neutral `source store` command validates version-1 dataset structure before
+using a `StorageBackend`. It requires an explicit destination, rejects symbolic links, and
+preserves existing objects unless `--overwrite` is supplied. Start with local storage before
+testing an optional S3-compatible service.
 
 ## Development
 

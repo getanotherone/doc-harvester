@@ -127,6 +127,17 @@ result = storage.upload_tree("datasets/example", "examples/latest")
 print(result.to_dict())
 ```
 
+For version-1 universal datasets, prefer the validated orchestration command:
+
+```bash
+doc-harvester source store /tmp/dataset --storage local \
+  --local-root /tmp/storage --destination review/run-001
+```
+
+The destination is mandatory and provider-relative. Existing objects are protected by
+default; `--overwrite` is explicit. S3-compatible endpoints use the same command after
+installing the `s3` extra and configuring bucket, endpoint, region, and credentials.
+
 ## Publishers
 
 All documentation adapters implement `Publisher`. They accept a `PublishRequest`, return a

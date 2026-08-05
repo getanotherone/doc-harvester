@@ -31,6 +31,7 @@ def test_root_env_example_has_universal_safe_defaults():
     assert values["ELECTRICAL_ONLY"] == "0"
     assert values["DOC_HARVESTER_XLSX_INCLUDE_HIDDEN"] == "0"
     assert values["DOC_HARVESTER_FAIL_ON_QUALITY"] == "0"
+    assert values["DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES"] == "5242880"
     assert "DOC_HARVESTER_PROFILE" not in values
     assert "change-me" not in EXAMPLE.read_text(encoding="utf-8")
 
@@ -41,6 +42,7 @@ def test_root_env_example_keeps_every_secret_blank():
         "SCRAPPER_API_KEY",
         "AWS_ACCESS_KEY_ID",
         "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
         "NOTION_TOKEN",
         "CONFLUENCE_EMAIL",
         "CONFLUENCE_API_TOKEN",
@@ -60,6 +62,7 @@ def test_root_env_example_covers_the_public_standalone_surface():
     expected_names = {
         "DOC_HARVESTER_STORAGE",
         "DOC_HARVESTER_LOCAL_STORAGE_ROOT",
+        "DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES",
         "DOC_HARVESTER_PUBLISHER",
         "DOC_HARVESTER_PUBLISH_ROOT",
         "DOC_HARVESTER_PROFILE",
@@ -87,7 +90,10 @@ def test_root_env_example_covers_the_public_standalone_surface():
         "DOC_HARVESTER_QUALITY_MAX_OVERSIZED_RATIO",
         "DOC_HARVESTER_FAIL_ON_QUALITY",
         "SCRAPPER_API_KEY",
-        "S3_BUCKET",
+        "DOC_HARVESTER_S3_BUCKET",
+        "DOC_HARVESTER_S3_PREFIX",
+        "DOC_HARVESTER_S3_ENDPOINT_URL",
+        "DOC_HARVESTER_S3_REGION",
         "NOTION_TOKEN",
         "CONFLUENCE_API_TOKEN",
         "YANDEX_DISK_TOKEN",
