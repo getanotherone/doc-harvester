@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `STORE-001` |
-| Status | Implemented; release validation pending |
+| Status | Complete; merge pending |
 | Depends on | `CORE-001`, `PIPE-001`, `PIPE-002` |
 | Scope | Safe provider-neutral handoff of reviewed version-1 datasets to `StorageBackend` |
 
@@ -152,3 +152,7 @@ Local verification on 2026-08-05:
 - Ruff, diff validation, wheel build/contents, and isolated installed-wheel
   discover/process/local-store smoke passed.
 - Complete-history Gitleaks (43 commits) and staged public-tree Gitleaks passed.
+- PR #17 standalone Python 3.11/3.12, DocProc, secrets, and CodeQL checks passed on
+  implementation commit `7adabd5`.
+
+Post-merge evidence will be recorded after merge checks finish.
