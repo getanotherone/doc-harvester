@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `CRAWL-001` |
-| Status | Complete; merge pending |
+| Status | Complete |
 | Depends on | `CORE-001`, `ADAPT-001`, `CLI-001`, `PIPE-001` |
 | Scope | Bounded, robots-aware HTML traversal that produces a version-1 processing manifest |
 
@@ -173,4 +173,8 @@ Local verification on 2026-08-05:
   package-discovery regression check for every public `doc_harvester` package.
 - Complete 52-commit history scan found no leaks.
 
-Public PR and post-merge checks remain pending.
+Public and post-merge verification on 2026-08-05:
+
+- [PR #21](https://github.com/getanotherone/doc-harvester/pull/21) passed all seven checks
+  and was squash-merged as `20d9742`.
+- Local `main` fast-forwarded to the merge commit with a clean working tree.

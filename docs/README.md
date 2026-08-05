@@ -30,6 +30,8 @@
 - [REVIEW-001 manual test cases](phases/REVIEW-001-dataset-inventory/manual-test-cases.md)
 - [CRAWL-001 — Safe provider-neutral web crawling](phases/CRAWL-001-safe-web-crawling/task-summary.md)
 - [CRAWL-001 manual test cases](phases/CRAWL-001-safe-web-crawling/manual-test-cases.md)
+- [E2E-001 — Credential-free universal golden path](phases/E2E-001-universal-golden-path/task-summary.md)
+- [E2E-001 manual test cases](phases/E2E-001-universal-golden-path/manual-test-cases.md)
 
 ## Operations and security
 
@@ -38,6 +40,8 @@
 - [Downloaded-document redistribution review](security/redistribution-review.md)
 
 - [Architecture](architecture.md): current components, data flow, and boundaries.
+- [Credential-free golden path](golden-path.md): run the complete review-gated workflow
+  against repository-owned local fixtures.
 - [Configuration](configuration.md): environment variables and safe defaults.
 - [Providers](providers.md): storage and publishing extension contracts.
 - [Wiki automation](wiki-automation.md): generating and publishing documentation.

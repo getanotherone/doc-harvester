@@ -1,0 +1,2 @@
+Confirm isolation before beginning installation work.
+Use only reviewed synthetic data during this golden-path exercise.

@@ -45,6 +45,9 @@ doc-harvester demo
 The demo uses embedded HTML, requires no credentials or network access, and writes
 `demo-output/chunks.json`.
 
+To verify the complete review-gated workflow—from a synthetic local website through local
+storage and publication preview—follow the [credential-free golden path](docs/golden-path.md).
+
 ## CLI
 
 ```bash
