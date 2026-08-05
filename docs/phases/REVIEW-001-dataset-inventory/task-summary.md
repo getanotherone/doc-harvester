@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `REVIEW-001` |
-| Status | Complete; merge pending |
+| Status | Complete |
 | Depends on | `PIPE-001`, `PIPE-002`, `STORE-001`, `PUB-002` |
 | Scope | Bounded, content-free inventory of a version-1 processed dataset |
 
@@ -145,4 +145,10 @@ Local verification on 2026-08-05:
   quality without emitting its source URI; selected render and local preview then passed.
 - Wheel build, content inspection, and extracted-wheel inspection smoke passed.
 
-Public PR and post-merge checks remain pending.
+Public and post-merge verification on 2026-08-05:
+
+- [PR #20](https://github.com/getanotherone/doc-harvester/pull/20) passed all seven checks
+  and was squash-merged as `334f3fa`.
+- Post-merge Ruff, 240 standalone tests, and 107 DocProc tests passed on `main`.
+- Real local dataset inspection remained content-free and selected the expected README entry.
+- Complete merged history scan covered 52 commits and found no leaks.

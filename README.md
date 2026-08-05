@@ -55,6 +55,10 @@ doc-harvester source discover manual README.md docs/architecture.md
 doc-harvester source discover sitemap https://example.com/sitemap.xml \
   --output discovery.json
 
+# Crawl one documentation site conservatively into the same manifest format
+doc-harvester source crawl https://docs.example.com/ \
+  --limit 25 --max-depth 2 --delay 1 --output crawl.json
+
 # Fetch one selected resource into an explicit file
 doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md
 
@@ -164,6 +168,11 @@ other vendor adapters are not imported by this core package.
 Credential-free manual/sitemap discovery and HTTP/local-file fetchers are available under
 `doc_harvester.discovery` and `doc_harvester.fetchers`. The additive `source` CLI exposes
 them without changing the legacy crawl and provider-search orchestration.
+
+The provider-neutral `doc_harvester.crawlers.HTMLCrawler` and `source crawl` command add
+bounded robots-aware HTML traversal. Defaults are exact seed-origin, robots enforced,
+one-second delay, depth three, and at most 100 fetched pages/resources. Review generated
+URLs before sharing or processing them.
 
 Provider-neutral basic enrichment and quality adapters are available under
 `doc_harvester.enrichers` and `doc_harvester.quality`. `source process` writes a

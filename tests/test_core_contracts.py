@@ -96,6 +96,8 @@ def test_core_validates_portable_policy_boundaries():
         core.CrawlPolicy(max_pages=0)
     with pytest.raises(ValueError, match="cannot be negative"):
         core.CrawlPolicy(delay_seconds=-0.1)
+    with pytest.raises(ValueError, match="cannot be negative"):
+        core.CrawlPolicy(max_depth=-1)
     with pytest.raises(ValueError, match="smaller"):
         core.ChunkingOptions(max_tokens=100, overlap_tokens=100)
     with pytest.raises(ValueError, match="negative"):

@@ -48,6 +48,12 @@ flag with the corresponding name takes precedence.
 | `DOC_HARVESTER_FETCH_ROOT` | `.` | `--root`; permitted local-source root |
 | `DOC_HARVESTER_MAX_FETCH_BYTES` | `52428800` | `--max-bytes`; maximum fetched bytes |
 | `DOC_HARVESTER_HTTP_TIMEOUT` | `30` | `--timeout`; positive HTTP timeout in seconds |
+| `DOC_HARVESTER_CRAWL_MAX_PAGES` | `100` | `source crawl --limit`; maximum fetched HTML pages and manifest resources |
+| `DOC_HARVESTER_CRAWL_MAX_DEPTH` | `3` | `source crawl --max-depth`; maximum link depth from a seed |
+| `DOC_HARVESTER_CRAWL_DELAY_SECONDS` | `1` | `source crawl --delay`; minimum per-origin crawl-fetch delay before robots crawl-delay |
+| `DOC_HARVESTER_CRAWL_MAX_HTML_BYTES` | `5242880` | `source crawl --max-html-bytes`; maximum fetched page bytes |
+| `DOC_HARVESTER_CRAWL_MAX_ROBOTS_BYTES` | `524288` | `source crawl --max-robots-bytes`; maximum robots policy bytes |
+| `DOC_HARVESTER_CRAWL_MAX_LINKS_PER_PAGE` | `1000` | `source crawl --max-links-per-page`; anchor parsing bound |
 | `DOC_HARVESTER_MAX_MANIFEST_BYTES` | `5242880` | `--max-manifest-bytes`; processing-manifest bound |
 | `DOC_HARVESTER_MAX_REVIEW_ARTIFACT_BYTES` | `10485760` | `source inspect --max-artifact-bytes`; per document/chunk/quality JSON bound |
 | `DOC_HARVESTER_MAX_REVIEW_DOCUMENTS` | `10000` | `source inspect --max-documents`; maximum outcome inventory size |
@@ -106,8 +112,23 @@ doc-harvester source discover sitemap https://example.com/sitemap.xml \
   --limit 25 --output discovery.json
 ```
 
-Use `--no-robots` or `--allow-cross-origin` only when that behavior is intentional. Fetch
-one reviewed resource into an explicit output file:
+Use `--no-robots` or `--allow-cross-origin` only when that behavior is intentional.
+
+HTML crawl is a separate, stricter command:
+
+```bash
+doc-harvester source crawl https://docs.example.com/ \
+  --limit 25 --max-depth 2 --delay 1 --output crawl.json
+```
+
+It enforces robots and exact seed-origin scope by default. Missing robots (HTTP 404/410)
+allows traversal; other robots failures are fail-closed. `--ignore-robots` is only for an
+owner-authorized test. `--allowed-domain` explicitly expands host scope, `--exclude` blocks
+traversal, and `--include` filters manifest output while permitting bridge-page traversal.
+Existing output requires `--overwrite`. Generated manifests contain full URLs and should be
+reviewed before `source process` or public sharing.
+
+Fetch one reviewed resource into an explicit output file:
 
 ```bash
 doc-harvester source fetch README.md --root . --output /tmp/readme-copy.md

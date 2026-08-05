@@ -57,6 +57,7 @@ Built-in adapters:
 |---|---|---|
 | Discovery | `manual` | Ordered, deduplicated paths and `file`/`http`/`https` URIs |
 | Discovery | `sitemap` | Conventional sitemaps, `robots.txt` declarations, indexes, and gzip |
+| Crawl | `html` | Robots-aware bounded HTML anchor traversal with exact-origin defaults |
 | Fetch | `http` | Streaming HTTP(S) reads with timeout and byte limits |
 | Fetch | `local-file` | Plain paths and local file URIs confined below a configured root |
 
@@ -77,6 +78,23 @@ Discovery produces a manifest only; it never downloads every discovered page. Fe
 requires one selected resource and an explicit output file. See
 [Configuration](configuration.md#credential-free-source-commands) for bounds, overwrite
 behavior, and environment defaults.
+
+The universal HTML crawler is available independently of legacy profile crawling:
+
+```python
+from doc_harvester.core import CrawlPolicy, ResourceRef
+from doc_harvester.crawlers import create_crawler
+
+crawler = create_crawler("html")
+resources = crawler.crawl(
+    [ResourceRef("https://docs.example.com/")],
+    CrawlPolicy(max_pages=25, max_depth=2, delay_seconds=1),
+)
+```
+
+Robots and exact seed-origin scope are defaults. Include patterns filter results without
+blocking bridge traversal; exclude patterns block traversal. Recognized linked documents are
+returned without a crawl-stage download and are fetched later by processing.
 
 ## Credential-free extraction and chunking
 
