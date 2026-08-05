@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Phase ID | `REL-001` |
-| Status | Release candidate complete locally; merge/tag pending |
+| Status | Release candidate verified; merge/tag pending |
 | Depends on | `P0`, `P1`, `E2E-001` and all universal adapter phases |
 | Scope | Prepare, verify, and publish the CLI-first `0.2.0` open-source MVP |
 
@@ -161,4 +161,12 @@ Local verification on 2026-08-06:
   oversized chunks, and zero quality failures.
 - Diff/workflow-YAML validation passed; complete 56-commit history scan found no leaks.
 
-Public PR, post-merge verification, tag, and GitHub release remain pending.
+Public candidate verification on 2026-08-06:
+
+- [PR #23](https://github.com/getanotherone/doc-harvester/pull/23) passed all eight checks:
+  Python 3.11/3.12, DocProc, secrets, clean-wheel smoke, both CodeQL analyses, and CodeQL.
+- GitHub reports the candidate as mergeable.
+
+Post-merge verification, tag, and GitHub release remain pending. Because the tag must point
+to the immutable verified merge, final tag/release evidence belongs on the GitHub release
+page rather than in the pre-merge candidate commit.

@@ -9,8 +9,8 @@
 | `REL-001-TC-03` | Enforce the absolute chunk ceiling | Critical | Passed locally |
 | `REL-001-TC-04` | Install wheel cleanly and run golden path | Critical | Passed locally |
 | `REL-001-TC-05` | Verify MVP scope, versions, and changelog | High | Passed by automation |
-| `REL-001-TC-06` | Complete regression and public checks | Critical | Passed locally; PR pending |
-| `REL-001-TC-07` | Tag and publish the verified MVP merge | Critical | Pending merge approval |
+| `REL-001-TC-06` | Complete regression and public checks | Critical | Passed |
+| `REL-001-TC-07` | Tag and publish the verified MVP merge | Critical | Ready; pending merge approval |
 
 ### [REL-001-TC-01] Base wheel metadata excludes heavy legacy dependencies
 
@@ -135,7 +135,7 @@
 - **Test Data:** Synthetic repository fixtures and sanitized aggregate evidence.
 - **Execution:** Passed locally on 2026-08-06: Ruff, 39 focused tests, 264 standalone tests,
   107 DocProc tests, clean-wheel smoke, real-page smoke, diff/YAML validation, and
-  56-commit history scan. Public checks remain pending.
+  56-commit history scan. PR #23 passed all eight public checks and is mergeable.
 
 ### [REL-001-TC-07] Verified merge is tagged and published
 
