@@ -22,6 +22,8 @@
 - [EXTR-003 manual test cases](phases/EXTR-003-xlsx/manual-test-cases.md)
 - [PIPE-002 — Neutral enrichment and quality gates](phases/PIPE-002-enrichment-quality/task-summary.md)
 - [PIPE-002 manual test cases](phases/PIPE-002-enrichment-quality/manual-test-cases.md)
+- [STORE-001 — Validated dataset storage](phases/STORE-001-dataset-storage/task-summary.md)
+- [STORE-001 manual test cases](phases/STORE-001-dataset-storage/manual-test-cases.md)
 
 ## Operations and security
 
@@ -34,6 +36,8 @@
 - [Providers](providers.md): storage and publishing extension contracts.
 - [Wiki automation](wiki-automation.md): generating and publishing documentation.
 - [Notion dry-run](notion-dry-run.md): connect one page and verify access without changing it.
+- [S3-compatible test connection](s3-testing.md): start locally, then test a scoped
+  Cloudflare R2 bucket with cleanup steps.
 - [Phase documentation](phases/README.md): public task summaries, manual tests, and
   privacy-safe evidence conventions, including reusable templates.
 - [PUB-001 Notion publishing validation](phases/PUB-001-notion-publishing-validation/task-summary.md):

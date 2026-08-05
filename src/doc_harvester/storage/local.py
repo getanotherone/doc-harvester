@@ -42,3 +42,20 @@ class LocalStorage(StorageProvider):
             raise FileExistsError(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, target)
+
+    def upload_tree(
+        self,
+        source: str | Path,
+        destination: str,
+        *,
+        overwrite: bool = True,
+    ):
+        source_path = Path(source).expanduser().resolve()
+        target = self._path(destination)
+        if (
+            source_path == target
+            or source_path in target.parents
+            or target in source_path.parents
+        ):
+            raise ValueError("local source and storage destination trees overlap")
+        return super().upload_tree(source, destination, overwrite=overwrite)

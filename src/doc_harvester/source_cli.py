@@ -334,6 +334,61 @@ def add_source_commands(commands: argparse._SubParsersAction) -> None:
     )
     process.set_defaults(handler=_run_process)
 
+    store = source_commands.add_parser(
+        "store", help="Validate and store a processed dataset through a configured backend"
+    )
+    store.add_argument("dataset", help="Local version-1 processed dataset directory")
+    store.add_argument(
+        "--destination",
+        required=True,
+        help="Explicit provider-relative destination prefix",
+    )
+    store.add_argument(
+        "--storage",
+        choices=("local", "s3", "yandex"),
+        default=os.environ.get("DOC_HARVESTER_STORAGE", "local"),
+        help="Storage backend (default: local)",
+    )
+    store.add_argument(
+        "--local-root",
+        default=None,
+        help="Override the local backend root",
+    )
+    store.add_argument(
+        "--s3-bucket",
+        default=None,
+        help="Override the configured S3 bucket (not a secret)",
+    )
+    store.add_argument(
+        "--s3-prefix",
+        default=None,
+        help="Optional key prefix inside the S3 bucket",
+    )
+    store.add_argument(
+        "--s3-endpoint-url",
+        default=None,
+        help="S3-compatible endpoint URL; omit for AWS S3",
+    )
+    store.add_argument(
+        "--s3-region",
+        default=None,
+        help="S3 region name",
+    )
+    store.add_argument(
+        "--max-report-bytes",
+        type=_positive_int,
+        default=_environment_default(
+            "DOC_HARVESTER_MAX_PROCESSING_REPORT_BYTES", 5 * 1024 * 1024
+        ),
+        help="Maximum processing-report bytes accepted (default: 5242880)",
+    )
+    store.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace existing objects (default: reject any destination conflict)",
+    )
+    store.set_defaults(handler=_run_store)
+
 
 def _resource_payload(resource: ResourceRef) -> dict[str, object]:
     return {
@@ -375,6 +430,39 @@ def _run_manual_discovery(args: argparse.Namespace) -> int:
     except (FetchError, OSError, ValueError) as error:
         print(f"source discovery failed: {error}", file=sys.stderr)
         return 1
+    return 0
+
+
+def _run_store(args: argparse.Namespace) -> int:
+    from doc_harvester.dataset_storage import DatasetValidationError, store_dataset
+
+    options = {"root": args.local_root} if args.local_root else {}
+    if args.storage == "s3":
+        options.update(
+            {
+                name: value
+                for name, value in (
+                    ("bucket", args.s3_bucket),
+                    ("prefix", args.s3_prefix),
+                    ("endpoint_url", args.s3_endpoint_url),
+                    ("region", args.s3_region),
+                )
+                if value is not None
+            }
+        )
+    try:
+        result = store_dataset(
+            args.dataset,
+            args.destination,
+            storage_name=args.storage,
+            overwrite=args.overwrite,
+            max_report_bytes=args.max_report_bytes,
+            **options,
+        )
+    except (DatasetValidationError, OSError, RuntimeError, ValueError) as error:
+        print(f"source storage failed: {error}", file=sys.stderr)
+        return 1
+    _emit_json(result.to_dict())
     return 0
 
 

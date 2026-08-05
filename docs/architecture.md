@@ -93,6 +93,12 @@ classification. The gate records empty, tiny, duplicate, noisy, and oversized ra
 per-document `quality.json`. Findings remain visible in a successfully published dataset;
 operators may opt into a non-zero exit status with `--fail-on-quality`.
 
+`source store` is the reviewed handoff from the atomic local dataset to a configured
+`StorageBackend`. It validates the processing report and every processed resource's document,
+chunk, and quality artifacts before writing. The default no-overwrite policy preflights all
+target objects, and symbolic links are rejected. Generic remote backends cannot guarantee an
+atomic multi-object commit, so failed remote uploads must be reviewed and cleaned by prefix.
+
 ## Reliability controls
 
 - Streaming downloads avoid loading large responses into memory.

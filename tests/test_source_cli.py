@@ -55,6 +55,15 @@ def test_parser_exposes_credential_free_source_commands():
     process = parser.parse_args(
         ["source", "process", "manifest.json", "--output", "/tmp/dataset"]
     )
+    store = parser.parse_args(
+        [
+            "source",
+            "store",
+            "/tmp/dataset",
+            "--destination",
+            "review/run-1",
+        ]
+    )
 
     assert (manual.command, manual.source_command, manual.discovery_mode) == (
         "source",
@@ -66,6 +75,36 @@ def test_parser_exposes_credential_free_source_commands():
     assert process.source_command == "process"
     assert process.include_hidden_xlsx_sheets is False
     assert process.fail_on_quality is False
+    assert store.source_command == "store"
+    assert store.storage == "local"
+    assert store.overwrite is False
+
+
+def test_store_parser_exposes_non_secret_s3_connection_overrides():
+    store = build_parser().parse_args(
+        [
+            "source",
+            "store",
+            "/tmp/dataset",
+            "--destination",
+            "review/run-1",
+            "--storage",
+            "s3",
+            "--s3-bucket",
+            "test-bucket",
+            "--s3-prefix",
+            "doc-harvester",
+            "--s3-endpoint-url",
+            "https://objects.example.test",
+            "--s3-region",
+            "test-1",
+        ]
+    )
+
+    assert store.s3_bucket == "test-bucket"
+    assert store.s3_prefix == "doc-harvester"
+    assert store.s3_endpoint_url == "https://objects.example.test"
+    assert store.s3_region == "test-1"
 
 
 def test_process_parser_can_include_hidden_xlsx_sheets():
