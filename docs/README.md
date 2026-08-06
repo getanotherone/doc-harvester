@@ -34,10 +34,14 @@
 - [E2E-001 manual test cases](phases/E2E-001-universal-golden-path/manual-test-cases.md)
 - [REL-001 — MVP release readiness](phases/REL-001-mvp-release-readiness/task-summary.md)
 - [REL-001 manual test cases](phases/REL-001-mvp-release-readiness/manual-test-cases.md)
+- [DIST-001 — PyPI and community launch](phases/DIST-001-pypi-community-launch/task-summary.md)
+- [DIST-001 manual test cases](phases/DIST-001-pypi-community-launch/manual-test-cases.md)
 
 ## Operations and security
 
 - [Backup and restore](operations/backup-and-restore.md)
+- [Publishing to PyPI](operations/pypi-publishing.md)
+- [First-user and contributor launch](community-launch.md)
 - [Credential rotation](security/credential-rotation.md)
 - [Downloaded-document redistribution review](security/redistribution-review.md)
 
@@ -45,7 +49,7 @@
 - [Credential-free golden path](golden-path.md): run the complete review-gated workflow
   against repository-owned local fixtures.
 - [CLI-first MVP scope](mvp-scope.md): supported outcomes, limitations, optional extras,
-  and `0.2.0` release criteria.
+  and completed `0.2.0` release criteria.
 - [Configuration](configuration.md): environment variables and safe defaults.
 - [Providers](providers.md): storage and publishing extension contracts.
 - [Wiki automation](wiki-automation.md): generating and publishing documentation.

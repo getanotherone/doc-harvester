@@ -1,5 +1,11 @@
 # Contributing
 
+Thank you for considering a contribution. New contributors are welcome to start with an
+issue labeled [`good first issue`](https://github.com/getanotherone/doc-harvester/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22)
+or [`help wanted`](https://github.com/getanotherone/doc-harvester/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22).
+Comment on the issue before beginning substantial work so scope and approach can be
+confirmed without wasted effort.
+
 ## Development setup
 
 1. Create a Python 3.11 or 3.12 virtual environment.
@@ -18,6 +24,11 @@
 - Preserve backward compatibility for the flat `src/` modules unless a migration is
   documented.
 - Document new environment variables and provider configuration.
+- Reference the issue being addressed and describe the user-visible result.
+
+Small documentation fixes, synthetic extractor fixtures, actionable error improvements,
+and provider-neutral adapter tests are good first contributions. Contributions must not
+include downloaded third-party documents, private URLs, credentials, or personal datasets.
 
 ## Phase documentation
 

@@ -29,7 +29,15 @@ def test_release_version_and_optional_heavy_dependencies_are_configured():
     dependencies = set(project["dependencies"])
     optional = project["optional-dependencies"]
 
-    assert project["version"] == __version__ == "0.2.0"
+    assert project["version"] == __version__ == "0.2.1"
+    assert project["license"] == "Apache-2.0"
+    assert project["urls"] == {
+        "Homepage": "https://github.com/getanotherone/doc-harvester",
+        "Documentation": "https://github.com/getanotherone/doc-harvester/tree/main/docs",
+        "Issues": "https://github.com/getanotherone/doc-harvester/issues",
+        "Changelog": "https://github.com/getanotherone/doc-harvester/blob/main/CHANGELOG.md",
+        "Source": "https://github.com/getanotherone/doc-harvester",
+    }
     assert not any(
         dependency.startswith(("pdf2image", "pytesseract", "playwright"))
         for dependency in dependencies
@@ -40,3 +48,17 @@ def test_release_version_and_optional_heavy_dependencies_are_configured():
     }
     assert optional["browser"] == ["playwright==1.58.0"]
     assert set(optional["legacy"]) == {*optional["ocr"], *optional["browser"]}
+
+
+def test_pypi_release_workflow_is_gated_and_uses_trusted_publishing():
+    workflow = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
+
+    assert "types: [published]" in workflow
+    assert "environment:" in workflow
+    assert "name: pypi" in workflow
+    assert "id-token: write" in workflow
+    assert "python -m build" in workflow
+    assert "python -m twine check dist/*" in workflow
+    assert "pypa/gh-action-pypi-publish@release/v1" in workflow
+    assert "password:" not in workflow
+    assert "PYPI_TOKEN" not in workflow

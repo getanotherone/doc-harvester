@@ -10,7 +10,7 @@
 | `REL-001-TC-04` | Install wheel cleanly and run golden path | Critical | Passed locally |
 | `REL-001-TC-05` | Verify MVP scope, versions, and changelog | High | Passed by automation |
 | `REL-001-TC-06` | Complete regression and public checks | Critical | Passed |
-| `REL-001-TC-07` | Tag and publish the verified MVP merge | Critical | Ready; pending merge approval |
+| `REL-001-TC-07` | Tag and publish the verified MVP merge | Critical | Passed |
 
 ### [REL-001-TC-01] Base wheel metadata excludes heavy legacy dependencies
 
@@ -156,4 +156,5 @@
 
 - **Postconditions:** GitHub MVP release exists; PyPI remains unchanged.
 - **Test Data:** Verified merge commit and sanitized release notes.
-- **Execution:** Pending merge and explicit release authorization.
+- **Execution:** Passed on 2026-08-06. Tag `v0.2.0` and the GitHub release resolve to
+  commit `2fe7f40d0e178a802d976a786be6a7a2290640a8`.

@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose a focused user outcome or provider-neutral integration.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem before the preferred implementation. Provider contributions
+        should keep vendor-specific behavior outside the universal core.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Who needs this, and what are they unable to accomplish today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior and a small acceptance example.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional workarounds, libraries, or existing adapters you considered.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Discovery or crawling
+        - Fetching or extraction
+        - Chunking, metadata, or quality
+        - Storage or publishing
+        - CLI or API
+        - Documentation or contributor experience
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I may be able to help implement or test this change.

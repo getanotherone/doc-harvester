@@ -65,8 +65,10 @@ binaries. API, S3, and documentation-provider extras remain independently select
 - [x] Base wheel builds, installs cleanly, and omits browser/OCR dependencies.
 - [x] Python 3.11/3.12, DocProc, secret scan, and CodeQL checks are configured.
 - [x] Security, contribution, configuration, backup, and manual-test documentation exists.
-- [ ] Version `0.2.0` candidate is merged to `main` with all public checks green.
-- [ ] Git tag and GitHub release are created from the verified merge commit.
+- [x] Version `0.2.0` candidate is merged to `main` with all public checks green.
+- [x] Git tag and GitHub release are created from the verified merge commit.
 
-PyPI publication, remote-provider certification, production SLAs, and automatic deployment
-are post-MVP decisions. They are not implied by the `0.2.0` GitHub release.
+PyPI publication is handled by the post-MVP
+[DIST-001 distribution phase](phases/DIST-001-pypi-community-launch/task-summary.md).
+Remote-provider certification, production SLAs, and automatic application deployment remain
+outside the `0.2.0` MVP promise.

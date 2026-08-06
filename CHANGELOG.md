@@ -7,6 +7,21 @@ the first stable release.
 
 No unreleased changes.
 
+## [0.2.1] - 2026-08-06
+
+### Added
+
+- PyPI project metadata and a release-gated Trusted Publishing workflow that builds,
+  validates, smoke-tests, and publishes wheel and source distributions without a stored
+  registry token.
+- Public PyPI publishing guide, community launch guidance, and structured bug and feature
+  request forms for first users and contributors.
+
+### Changed
+
+- Make the standard installation path `pip install doc-harvester`, while retaining a
+  documented source checkout for contributors and pre-publication fallback.
+
 ## [0.2.0] - 2026-08-06
 
 ### Added

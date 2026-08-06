@@ -9,6 +9,13 @@ The project was initially tuned for Russian electrical-engineering material. The
 being generalized through profiles and provider interfaces; it is not yet a universal
 scraper for every website or document type.
 
+## Who This Is For
+
+Use doc-harvester when you need a reviewable, local-first path from technical files or
+documentation sites to structured chunks for retrieval. It is especially useful when you
+want explicit crawl bounds, inspectable intermediate artifacts, quality results, and a
+human approval step before storage or publication.
+
 ## Capabilities
 
 - Crawl HTML catalogues and follow relevant child pages.
@@ -31,19 +38,17 @@ Requirements: Python 3.11+. Tesseract and Poppler are optional legacy-workflow d
 and are not required for the demo or universal digital-text PDF processing.
 
 ```bash
-git clone https://github.com/getanotherone/doc-harvester.git
-cd doc-harvester
-
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e '.[dev]'
+python -m pip install doc-harvester
 
 doc-harvester demo
 ```
 
 The demo uses embedded HTML, requires no credentials or network access, and writes
-`demo-output/chunks.json`.
+`demo-output/chunks.json`. If the first PyPI release is not yet visible in your package
+index, use the [source installation](#development) until publication completes.
 
 To verify the complete review-gated workflow—from a synthetic local website through local
 storage and publication preview—follow the [credential-free golden path](docs/golden-path.md).
@@ -230,7 +235,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the
 
 ## Status
 
-Version `0.2.0` is the CLI-first open-source MVP. It remains an alpha-stage `0.x` release:
+Version `0.2.1` is the CLI-first open-source MVP and first PyPI-ready release. It remains an
+alpha-stage `0.x` release:
 APIs, configuration, and output schemas may change.
 
 ## License

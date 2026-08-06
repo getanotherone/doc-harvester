@@ -1,0 +1,69 @@
+name: Bug report
+description: Report reproducible behavior that differs from the documentation or expected result.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve doc-harvester. Remove credentials, private URLs,
+        downloaded documents, and sensitive output before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: doc-harvester version
+      description: Run `doc-harvester --version`.
+      placeholder: "0.2.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - PyPI
+        - Source checkout
+        - Container
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Use public or synthetic inputs and redact tokens, query parameters, and private paths.
+      placeholder: |
+        1. Run ...
+        2. Inspect ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Python version, command, and relevant optional extras.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs or output
+      description: Optional. Do not include credentials, private URLs, personal paths, or copyrighted documents.
+      render: text
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, private identifiers, private URLs, and sensitive document content.
+          required: true
+        - label: I searched existing issues for the same problem.
+          required: true
